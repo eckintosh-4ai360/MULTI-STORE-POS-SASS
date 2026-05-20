@@ -1,0 +1,10 @@
+# Environment variables
+.env
+.env*.local
+
+# Common ignores
+node_modules
+.next/
+tsconfig.tsbuildinfo
+.DS_Store
+/lib/generated/prisma
