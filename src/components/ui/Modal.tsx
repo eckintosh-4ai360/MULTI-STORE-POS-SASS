@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "../../utils/cn";
 
@@ -19,6 +20,12 @@ const sizes = {
 };
 
 export const Modal: React.FC<ModalProps> = ({ open, onClose, title, children, size = "md", footer }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     if (open) {
@@ -31,9 +38,9 @@ export const Modal: React.FC<ModalProps> = ({ open, onClose, title, children, si
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* Backdrop */}
       <div
@@ -65,6 +72,8 @@ export const Modal: React.FC<ModalProps> = ({ open, onClose, title, children, si
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
+

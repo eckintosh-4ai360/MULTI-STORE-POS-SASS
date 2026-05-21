@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../utils/prismaClient";
 import bcrypt from "bcryptjs";
+import { requireAuth, isNextResponse } from "../../../utils/apiAuth";
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireAuth(req);
+    if (isNextResponse(auth)) return auth;
+    // Only admins can create users
+    if (!['super_admin', 'store_admin'].includes(auth.role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
     const data = await req.json();
     const password = data.password || "password123";
     const passwordHash = bcrypt.hashSync(password, 10);
@@ -29,6 +36,12 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
+    const auth = await requireAuth(req);
+    if (isNextResponse(auth)) return auth;
+    // Only admins can update users
+    if (!['super_admin', 'store_admin'].includes(auth.role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
     const data = await req.json();
     const { id, password, ...updateData } = data;
 

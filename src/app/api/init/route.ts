@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../utils/prismaClient";
+import { requireAuth, isNextResponse } from "../../../utils/apiAuth";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const auth = await requireAuth(request);
+    if (isNextResponse(auth)) return auth;
     // 1. Check if database has stores. If not, perform automatic seed.
     const storeCount = await prisma.store.count();
     
@@ -49,13 +52,16 @@ export async function GET() {
         })
       ]);
 
-      // Seed Users
+      // Seed Users — password is "admin123" for all seed accounts
+      // bcrypt hash of "admin123"
+      const seedHash = "$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi";
       await Promise.all([
         prisma.user.create({
           data: {
             id: "u1",
             name: "Super Admin",
             email: "admin@multipos.com",
+            passwordHash: seedHash,
             role: "super_admin",
             status: "active",
             storeId: null
@@ -66,6 +72,7 @@ export async function GET() {
             id: "u2",
             name: "Kwame Asante",
             email: "kwame@multipos.com",
+            passwordHash: seedHash,
             role: "store_admin",
             status: "active",
             storeId: "s1"
@@ -76,6 +83,7 @@ export async function GET() {
             id: "u3",
             name: "Ama Boateng",
             email: "ama@multipos.com",
+            passwordHash: seedHash,
             role: "cashier",
             status: "active",
             storeId: "s1"
@@ -86,6 +94,7 @@ export async function GET() {
             id: "u4",
             name: "Kofi Mensah",
             email: "kofi@multipos.com",
+            passwordHash: seedHash,
             role: "manager",
             status: "active",
             storeId: "s2"
@@ -96,6 +105,7 @@ export async function GET() {
             id: "u5",
             name: "Abena Osei",
             email: "abena@multipos.com",
+            passwordHash: seedHash,
             role: "cashier",
             status: "active",
             storeId: "s2"
@@ -106,12 +116,14 @@ export async function GET() {
             id: "u6",
             name: "Yaw Darko",
             email: "yaw@multipos.com",
+            passwordHash: seedHash,
             role: "cashier",
             status: "inactive",
             storeId: "s3"
           }
         })
       ]);
+
 
       // Seed Categories
       await Promise.all([
@@ -241,6 +253,26 @@ export async function GET() {
     // Strip passwordHash before sending to client
     const sanitizedUsers = users.map(({ passwordHash, ...userWithoutPassword }) => userWithoutPassword);
 
+    // Fetch requesting user's organization subscription
+    const requestingUser = await prisma.user.findUnique({
+      where: { id: auth.userId },
+      select: { organizationId: true },
+    });
+
+    let subscriptionData = null;
+    if (requestingUser?.organizationId) {
+      subscriptionData = await prisma.subscription.findUnique({
+        where: { organizationId: requestingUser.organizationId },
+        select: {
+          plan: true,
+          status: true,
+          trialEnd: true,
+          currentPeriodEnd: true,
+          stripeCustomerId: true,
+        },
+      });
+    }
+
     return NextResponse.json({
       stores,
       users: sanitizedUsers,
@@ -251,7 +283,8 @@ export async function GET() {
       inventoryLogs,
       suppliers,
       purchaseOrders,
-      heldSales
+      heldSales,
+      subscription: subscriptionData,
     });
   } catch (error: any) {
     console.error("Error in /api/init:", error);

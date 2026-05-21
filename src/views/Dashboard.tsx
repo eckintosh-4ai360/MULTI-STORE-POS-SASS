@@ -37,9 +37,23 @@ export const Dashboard: React.FC = () => {
   );
 
   const today = startOfDay(new Date());
+  const yesterday = subDays(today, 1);
   const todaySales = filteredSales.filter(s => new Date(s.createdAt) >= today);
+  const yesterdaySales = filteredSales.filter(s => {
+    const d = new Date(s.createdAt);
+    return d >= yesterday && d < today;
+  });
   const todayRevenue = todaySales.reduce((sum, s) => sum + s.total, 0);
+  const yesterdayRevenue = yesterdaySales.reduce((sum, s) => sum + s.total, 0);
   const totalRevenue = filteredSales.reduce((sum, s) => sum + s.total, 0);
+
+  // Real trend percentages
+  const revenueTrend = yesterdayRevenue > 0
+    ? parseFloat(((todayRevenue - yesterdayRevenue) / yesterdayRevenue * 100).toFixed(1))
+    : todayRevenue > 0 ? 100 : 0;
+  const salesTorend = yesterdaySales.length > 0
+    ? parseFloat(((todaySales.length - yesterdaySales.length) / yesterdaySales.length * 100).toFixed(1))
+    : todaySales.length > 0 ? 100 : 0;
   const lowStockItems = filteredProducts.filter(p => p.stock <= p.lowStockThreshold);
 
   // 7-day chart data
@@ -89,8 +103,8 @@ export const Dashboard: React.FC = () => {
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Today's Revenue" value={`GHS ${todayRevenue.toFixed(2)}`} icon={<DollarSign size={20} />} color="indigo" trend={12.5} subtitle="vs yesterday" />
-        <StatCard title="Today's Sales" value={String(todaySales.length)} icon={<ShoppingBag size={20} />} color="emerald" trend={8.2} subtitle="transactions" />
+        <StatCard title="Today's Revenue" value={`GHS ${todayRevenue.toFixed(2)}`} icon={<DollarSign size={20} />} color="indigo" trend={revenueTrend} subtitle="vs yesterday" />
+        <StatCard title="Today's Sales" value={String(todaySales.length)} icon={<ShoppingBag size={20} />} color="emerald" trend={salesTorend} subtitle="vs yesterday" />
         <StatCard title="Low Stock Alerts" value={String(lowStockItems.length)} icon={<AlertTriangle size={20} />} color="amber" subtitle="items need restock" />
         <StatCard title={isSuperAdmin ? "Total Customers" : "Store Customers"} value={String(filteredCustomers.length)} icon={<Users size={20} />} color="purple" trend={5} subtitle="registered" />
       </div>

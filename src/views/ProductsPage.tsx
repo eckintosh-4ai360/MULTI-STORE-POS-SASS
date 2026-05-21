@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
+import { usePagination } from "../utils/usePagination";
 import { usePOSStore, Product, StockMoveType } from "../store/posStore";
-import { Plus, Search, Edit2, Trash2, AlertTriangle, Package, ArrowUpDown } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, AlertTriangle, Package, ArrowUpDown, XCircle, CalendarClock } from "lucide-react";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
@@ -36,6 +37,8 @@ export const ProductsPage: React.FC = () => {
     if (filterStatus === "expiring") prods = prods.filter(p => p.expiryDate);
     return prods;
   }, [products, search, storeId, isSuperAdmin, filterStatus]);
+
+  const { currentItems: pagedProducts, page: prodPage, setPage: setProdPage, totalPages: prodTotalPages, hasNext: prodHasNext, hasPrev: prodHasPrev } = usePagination(storeProducts, 20);
 
   const handleProductImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -110,16 +113,31 @@ export const ProductsPage: React.FC = () => {
             <button
               key={f}
               onClick={() => setFilterStatus(f)}
-              className={cn("px-3 py-1.5 rounded-xl text-xs font-medium transition", filterStatus === f ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
+              className={cn("px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition duration-150",
+                filterStatus === f
+                  ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/20"
+                  : "glass border border-white/60 text-slate-600 hover:bg-white/40 hover:text-slate-800")}
             >
-              {f === "all" ? "All Products" : f === "low" ? "⚠ Low Stock" : f === "out" ? "❌ Out of Stock" : "📅 Expiring"}
+              {f === "all" ? "All Products" : f === "low" ? (
+                <span className="flex items-center gap-1.5"><AlertTriangle size={12} />Low Stock</span>
+              ) : f === "out" ? (
+                <span className="flex items-center gap-1.5"><XCircle size={12} />Out of Stock</span>
+              ) : (
+                <span className="flex items-center gap-1.5"><CalendarClock size={12} />Expiring</span>
+              )}
             </button>
           ))}
         </div>
         <div className="flex gap-2">
           <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products..." className="pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-56" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search products..."
+              className="pl-9 pr-4 py-2 rounded-xl text-sm w-56 glass-input border border-white/60 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500/50"
+            />
           </div>
           {canEdit && <Button onClick={openAdd} icon={<Plus size={16} />}>Add Product</Button>}
         </div>
@@ -133,9 +151,9 @@ export const ProductsPage: React.FC = () => {
           { label: "Low Stock", value: storeProducts.filter(p => p.stock > 0 && p.stock <= p.lowStockThreshold).length, color: "text-amber-600" },
           { label: "Out of Stock", value: storeProducts.filter(p => p.stock === 0).length, color: "text-red-600" },
         ].map(stat => (
-          <div key={stat.label} className="bg-white rounded-2xl border border-gray-100 p-4">
-            <p className="text-xs text-gray-500">{stat.label}</p>
-            <p className={cn("text-2xl font-bold mt-0.5", stat.color)}>{stat.value}</p>
+          <div key={stat.label} className="glass-card rounded-2xl border border-white/60 p-4 shadow-sm">
+            <p className="text-xs font-semibold text-slate-500/80 uppercase tracking-widest">{stat.label}</p>
+            <p className={cn("text-2xl font-extrabold mt-0.5", stat.color)}>{stat.value}</p>
           </div>
         ))}
       </div>
@@ -145,48 +163,48 @@ export const ProductsPage: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 text-left">
-                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Product</th>
-                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Barcode</th>
-                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Category</th>
-                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Price / Cost</th>
-                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Stock</th>
-                {isSuperAdmin && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Store</th>}
-                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-                {canEdit && <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Actions</th>}
+              <tr className="border-b border-slate-200/50 bg-slate-50/30 text-left">
+                <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Product</th>
+                <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Barcode</th>
+                <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Category</th>
+                <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Price / Cost</th>
+                <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Stock</th>
+                {isSuperAdmin && <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Store</th>}
+                <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                {canEdit && <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
-              {storeProducts.map(p => (
-                <tr key={p.id} className="hover:bg-gray-50/50 transition">
+            <tbody className="divide-y divide-slate-100/50">
+              {pagedProducts.map(p => (
+                <tr key={p.id} className="hover:bg-slate-50/50 transition">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       {p.image ? (
-                        <img src={p.image} alt={p.name} className="w-10 h-10 rounded-xl border border-gray-100 object-cover flex-shrink-0" />
+                        <img src={p.image} alt={p.name} className="w-10 h-10 rounded-xl border border-slate-200/50 object-cover flex-shrink-0" />
                       ) : (
-                        <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 font-bold flex-shrink-0 text-xs">
+                        <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200/50 flex items-center justify-center text-slate-400 font-bold flex-shrink-0 text-xs">
                           {p.name.charAt(0).toUpperCase()}
                         </div>
                       )}
                       <div>
-                        <p className="font-medium text-gray-800">{p.name}</p>
-                        {p.expiryDate && <p className="text-[10px] text-orange-500">Expires: {p.expiryDate}</p>}
+                        <p className="font-semibold text-slate-800">{p.name}</p>
+                        {p.expiryDate && <p className="text-[10px] font-medium text-orange-500">Expires: {p.expiryDate}</p>}
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-400 font-mono text-xs">{p.barcode}</td>
+                  <td className="px-4 py-3 text-slate-400 font-mono text-xs">{p.barcode}</td>
                   <td className="px-4 py-3"><Badge variant="neutral">{categoryName(p.categoryId)}</Badge></td>
                   <td className="px-4 py-3">
-                    <p className="font-medium text-gray-800">GHS {p.price.toFixed(2)}</p>
-                    <p className="text-xs text-gray-400">Cost: GHS {p.costPrice.toFixed(2)}</p>
+                    <p className="font-semibold text-slate-800">GHS {p.price.toFixed(2)}</p>
+                    <p className="text-xs text-slate-400 font-medium">Cost: GHS {p.costPrice.toFixed(2)}</p>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <span className={cn("font-semibold", p.stock === 0 ? "text-red-600" : p.stock <= p.lowStockThreshold ? "text-amber-600" : "text-gray-700")}>{p.stock}</span>
+                      <span className={cn("font-bold", p.stock === 0 ? "text-rose-600" : p.stock <= p.lowStockThreshold ? "text-amber-600" : "text-slate-700")}>{p.stock}</span>
                       {p.stock <= p.lowStockThreshold && p.stock > 0 && <AlertTriangle size={14} className="text-amber-500" />}
                     </div>
                   </td>
-                  {isSuperAdmin && <td className="px-4 py-3 text-xs text-gray-400">{storeName(p.storeId)}</td>}
+                  {isSuperAdmin && <td className="px-4 py-3 text-xs text-slate-500 font-medium">{storeName(p.storeId)}</td>}
                   <td className="px-4 py-3">
                     <Badge variant={p.stock === 0 ? "danger" : p.stock <= p.lowStockThreshold ? "warning" : "success"}>
                       {p.stock === 0 ? "Out of Stock" : p.stock <= p.lowStockThreshold ? "Low Stock" : "In Stock"}
@@ -195,9 +213,9 @@ export const ProductsPage: React.FC = () => {
                   {canEdit && (
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
-                        <button onClick={() => openStock(p)} className="p-1.5 text-emerald-500 hover:bg-emerald-50 rounded-lg transition" title="Adjust Stock"><ArrowUpDown size={14} /></button>
-                        <button onClick={() => openEdit(p)} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition" title="Edit"><Edit2 size={14} /></button>
-                        <button onClick={() => deleteProduct(p.id)} className="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition" title="Delete"><Trash2 size={14} /></button>
+                        <button onClick={() => openStock(p)} className="p-1.5 text-emerald-600 hover:bg-emerald-500/10 rounded-lg transition" title="Adjust Stock"><ArrowUpDown size={14} /></button>
+                        <button onClick={() => openEdit(p)} className="p-1.5 text-blue-600 hover:bg-blue-500/10 rounded-lg transition" title="Edit"><Edit2 size={14} /></button>
+                        <button onClick={() => deleteProduct(p.id)} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition" title="Delete"><Trash2 size={14} /></button>
                       </div>
                     </td>
                   )}
@@ -206,9 +224,29 @@ export const ProductsPage: React.FC = () => {
             </tbody>
           </table>
           {!storeProducts.length && (
-            <div className="py-16 text-center text-gray-400">
-              <Package size={40} className="mx-auto mb-2 opacity-40" />
-              <p>No products found</p>
+            <div className="py-16 text-center text-slate-400">
+              <Package size={40} className="mx-auto mb-2 opacity-40 text-slate-400" />
+              <p className="text-sm font-medium">No products found</p>
+            </div>
+          )}
+          {prodTotalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100/50">
+              <p className="text-xs text-slate-500 font-medium">
+                Showing {((prodPage - 1) * 20) + 1}–{Math.min(prodPage * 20, storeProducts.length)} of {storeProducts.length} products
+              </p>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setProdPage(p => Math.max(1, p - 1))}
+                  disabled={!prodHasPrev}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200/60 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                >Prev</button>
+                <span className="px-3 py-1.5 text-xs font-semibold text-slate-500">{prodPage} / {prodTotalPages}</span>
+                <button
+                  onClick={() => setProdPage(p => Math.min(prodTotalPages, p + 1))}
+                  disabled={!prodHasNext}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200/60 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                >Next</button>
+              </div>
             </div>
           )}
         </div>
@@ -249,13 +287,13 @@ export const ProductsPage: React.FC = () => {
           )}
           <Input label="Expiry Date (optional)" type="date" value={form.expiryDate} onChange={e => setForm(f => ({ ...f, expiryDate: e.target.value }))} />
           <div>
-            <label className="text-xs font-semibold text-gray-600 block mb-1">Product Image</label>
+            <label className="text-xs font-semibold text-slate-500/80 uppercase tracking-widest block mb-1.5">Product Image</label>
             <div className="flex items-center gap-3">
               {form.image ? (
-                <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-gray-200 flex-shrink-0">
+                <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-slate-200 flex-shrink-0">
                   <img src={form.image} alt="Product Preview" className="w-full h-full object-cover" />
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setForm(f => ({ ...f, image: "" }))}
                     className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 hover:opacity-100 transition text-[9px] font-bold"
                   >
@@ -263,18 +301,18 @@ export const ProductsPage: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <div className="w-12 h-12 rounded-xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-400 text-xs flex-shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-slate-50 border-2 border-dashed border-slate-200/50 flex items-center justify-center text-slate-400 text-xs flex-shrink-0 font-medium">
                   None
                 </div>
               )}
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={handleProductImageUpload} 
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleProductImageUpload}
                 disabled={uploading}
-                className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 file:cursor-pointer"
+                className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-500/10 file:text-indigo-700 hover:file:bg-indigo-500/20 file:cursor-pointer"
               />
-              {uploading && <span className="text-[10px] text-gray-400">Uploading...</span>}
+              {uploading && <span className="text-[10px] text-slate-400 font-medium">Uploading...</span>}
             </div>
           </div>
         </div>
@@ -289,8 +327,8 @@ export const ProductsPage: React.FC = () => {
         footer={<><Button variant="secondary" onClick={() => setShowStockModal(false)}>Cancel</Button><Button onClick={handleStockAdjust}>Confirm</Button></>}
       >
         <div className="space-y-4">
-          <div className="bg-gray-50 rounded-xl p-3 text-sm">
-            <p className="text-gray-500">Current Stock: <span className="font-bold text-gray-800">{stockProduct?.stock} units</span></p>
+          <div className="bg-slate-500/10 border border-slate-500/20 rounded-xl p-3 text-sm">
+            <p className="text-slate-500 font-medium">Current Stock: <span className="font-bold text-slate-800">{stockProduct?.stock} units</span></p>
           </div>
           <Select
             label="Adjustment Type"

@@ -1,6 +1,5 @@
 import React from "react";
 import { cn } from "../../utils/cn";
-import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface StatCardProps {
   title: string;
@@ -13,31 +12,47 @@ interface StatCardProps {
 }
 
 const colors = {
-  indigo: { icon: "bg-indigo-500 text-white shadow-md shadow-indigo-500/20" },
-  emerald: { icon: "bg-emerald-500 text-white shadow-md shadow-emerald-500/20" },
-  amber: { icon: "bg-amber-500 text-white shadow-md shadow-amber-500/20" },
-  rose: { icon: "bg-rose-500 text-white shadow-md shadow-rose-500/20" },
-  purple: { icon: "bg-purple-500 text-white shadow-md shadow-purple-500/20" },
-  cyan: { icon: "bg-cyan-500 text-white shadow-md shadow-cyan-500/20" },
+  indigo: { iconBg: "bg-indigo-500/10 text-indigo-600" },
+  emerald: { iconBg: "bg-emerald-500/10 text-emerald-600" },
+  amber: { iconBg: "bg-amber-500/10 text-amber-600" },
+  rose: { iconBg: "bg-rose-500/10 text-rose-600" },
+  purple: { iconBg: "bg-purple-500/10 text-purple-600" },
+  cyan: { iconBg: "bg-cyan-500/10 text-cyan-600" },
 };
 
 export const StatCard: React.FC<StatCardProps> = ({ title, value, subtitle, icon, trend, color = "indigo", className }) => {
-  const c = colors[color];
+  const c = colors[color] || colors.indigo;
   return (
-    <div className={cn("glass-stat-card rounded-2xl p-5 flex items-start gap-4 border border-white/60", className)}>
-      <div className={cn("w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0", c.icon)}>{icon}</div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{title}</p>
-        <p className="text-3xl font-extrabold text-slate-900 mt-1 tracking-tight">{value}</p>
-        <div className="flex items-center gap-2 mt-1.5">
-          {trend !== undefined && (
-            <span className={cn("flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full", trend >= 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600")}>
-              {trend >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
-              {Math.abs(trend)}%
-            </span>
-          )}
-          {subtitle && <span className="text-xs font-medium text-slate-400">{subtitle}</span>}
+    <div className={cn("glass-card rounded-2xl p-5 flex flex-col justify-between border border-white/60 shadow-sm relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md", className)}>
+      {/* Top row: Icon and Badge/Trend */}
+      <div className="flex items-center justify-between mb-3 w-full">
+        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center shadow-inner", c.iconBg)}>
+          {icon}
         </div>
+        {trend !== undefined ? (
+          <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border", 
+            trend >= 0 
+              ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
+              : "bg-rose-50 text-rose-600 border-rose-100"
+          )}>
+            {trend >= 0 ? "+" : ""}{trend}%
+          </span>
+        ) : (
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            {color === "indigo" ? "LIVE" : color === "emerald" ? "ACTIVE" : color === "amber" ? "PENDING" : "TODAY"}
+          </span>
+        )}
+      </div>
+
+      {/* Value */}
+      <div className="mt-1">
+        <span className="text-3xl font-black text-slate-900 tracking-tight block">{value}</span>
+      </div>
+
+      {/* Text Info */}
+      <div className="mt-2">
+        <span className="text-xs font-bold text-slate-800 block leading-tight">{title}</span>
+        {subtitle && <span className="text-[10px] font-medium text-slate-500 block mt-1">{subtitle}</span>}
       </div>
     </div>
   );

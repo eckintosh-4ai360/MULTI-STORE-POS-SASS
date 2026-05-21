@@ -1,12 +1,19 @@
 import React, { useState } from "react";
 import { usePOSStore } from "../store/posStore";
-import { ShoppingCart, Lock, Mail, AlertCircle } from "lucide-react";
+import { ShoppingCart, Lock, Mail, AlertCircle, Eye, EyeOff, Zap, BarChart3, Globe, Shield } from "lucide-react";
 
 const demoAccounts = [
-  { email: "admin@multipos.com", label: "Super Admin", role: "super_admin" },
-  { email: "kwame@multipos.com", label: "Store Admin (Accra)", role: "store_admin" },
-  { email: "ama@multipos.com", label: "Cashier (Accra)", role: "cashier" },
-  { email: "kofi@multipos.com", label: "Manager (Kumasi)", role: "manager" },
+  { email: "admin@multipos.com", label: "Super Admin", role: "super_admin", color: "#6366f1" },
+  { email: "kwame@multipos.com", label: "Store Admin", sublabel: "Accra", role: "store_admin", color: "#8b5cf6" },
+  { email: "ama@multipos.com", label: "Cashier", sublabel: "Accra", role: "cashier", color: "#06b6d4" },
+  { email: "kofi@multipos.com", label: "Manager", sublabel: "Kumasi", role: "manager", color: "#10b981" },
+];
+
+const features = [
+  { icon: <BarChart3 size={18} />, text: "Real-time analytics across all stores" },
+  { icon: <Globe size={18} />, text: "Multi-branch inventory management" },
+  { icon: <Zap size={18} />, text: "Lightning-fast POS terminal" },
+  { icon: <Shield size={18} />, text: "Role-based access control" },
 ];
 
 export const LoginPage: React.FC = () => {
@@ -15,12 +22,12 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState("password123");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    // Add a slight realistic latency feel
     await new Promise(r => setTimeout(r, 600));
     const ok = await login(email, password);
     if (!ok) setError("Invalid credentials or account disabled.");
@@ -28,131 +35,429 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-950 to-gray-900 flex relative overflow-hidden">
-      {/* Background Animated Orbs */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-500 rounded-full filter blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-500 rounded-full filter blur-[120px] animate-pulse" style={{ animationDelay: "2s" }} />
+    <div className="min-h-screen flex relative overflow-hidden" style={{ background: "linear-gradient(135deg, #0f0c29 0%, #1a1040 40%, #0d1b3e 100%)" }}>
+      {/* Animated background blobs */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div style={{
+          position: "absolute", top: "-20%", left: "-15%",
+          width: "55%", height: "55%",
+          background: "radial-gradient(circle, rgba(99,102,241,0.35) 0%, transparent 70%)",
+          borderRadius: "50%", filter: "blur(60px)",
+          animation: "pulse 6s ease-in-out infinite"
+        }} />
+        <div style={{
+          position: "absolute", bottom: "-20%", right: "-15%",
+          width: "60%", height: "60%",
+          background: "radial-gradient(circle, rgba(139,92,246,0.3) 0%, transparent 70%)",
+          borderRadius: "50%", filter: "blur(80px)",
+          animation: "pulse 8s ease-in-out infinite 2s"
+        }} />
+        <div style={{
+          position: "absolute", top: "40%", right: "20%",
+          width: "30%", height: "30%",
+          background: "radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%)",
+          borderRadius: "50%", filter: "blur(60px)",
+          animation: "pulse 7s ease-in-out infinite 1s"
+        }} />
+        {/* Subtle grid */}
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)",
+          backgroundSize: "60px 60px"
+        }} />
       </div>
 
-      {/* Left Panel */}
+      {/* LEFT PANEL */}
       <div className="hidden lg:flex flex-col justify-center px-16 flex-1 relative z-10">
-        <div>
-          <div className="flex items-center gap-3 mb-10">
-            <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
-              <ShoppingCart size={24} className="text-white" />
-            </div>
-            <span className="text-2xl font-bold text-white tracking-tight">MultiPOS</span>
+        {/* Logo */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "48px" }}>
+          <div style={{
+            width: "48px", height: "48px",
+            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+            borderRadius: "14px",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 8px 32px rgba(99,102,241,0.4)"
+          }}>
+            <ShoppingCart size={22} color="white" />
           </div>
-          <h1 className="text-5xl font-extrabold text-white leading-tight mb-4 tracking-tight">
-            Multi-Store<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">POS Terminal</span>
-          </h1>
-          <p className="text-gray-400 text-lg max-w-md mb-10 leading-relaxed">
-            Manage multiple branches, track real-time inventory, process retail sales, and analyze business performance — all from one premium dashboard.
-          </p>
-          <div className="grid grid-cols-2 gap-4 max-w-md">
-            {[
-              { label: "Stores Managed", value: "3+" },
-              { label: "Daily Transactions", value: "500+" },
-              { label: "Products Tracked", value: "1,200+" },
-              { label: "System Uptime", value: "99.9%" },
-            ].map(stat => (
-              <div key={stat.label} className="bg-white/5 rounded-2xl p-4 border border-white/10 backdrop-blur-md">
-                <p className="text-2xl font-bold text-white">{stat.value}</p>
-                <p className="text-gray-400 text-xs mt-0.5">{stat.label}</p>
+          <div>
+            <div style={{ color: "white", fontWeight: 800, fontSize: "22px", letterSpacing: "-0.5px", lineHeight: 1 }}>MultiPOS</div>
+            <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", marginTop: "2px" }}>SaaS Platform</div>
+          </div>
+        </div>
+
+        <h1 style={{
+          fontSize: "clamp(36px, 4vw, 56px)",
+          fontWeight: 900,
+          color: "white",
+          lineHeight: 1.1,
+          letterSpacing: "-1.5px",
+          marginBottom: "20px"
+        }}>
+          The smarter way<br />
+          to run{" "}
+          <span style={{
+            background: "linear-gradient(90deg, #818cf8, #c084fc, #38bdf8)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent"
+          }}>
+            retail.
+          </span>
+        </h1>
+
+        <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "16px", maxWidth: "400px", lineHeight: 1.7, marginBottom: "40px" }}>
+          One dashboard to manage every store, every product, every transaction — with the clarity you need to grow.
+        </p>
+
+        {/* Feature list */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "48px" }}>
+          {features.map((f, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{
+                width: "36px", height: "36px",
+                background: "rgba(99,102,241,0.15)",
+                border: "1px solid rgba(99,102,241,0.3)",
+                borderRadius: "10px",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "#818cf8", flexShrink: 0
+              }}>
+                {f.icon}
               </div>
-            ))}
-          </div>
+              <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "14px" }}>{f.text}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Stats row */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", maxWidth: "400px" }}>
+          {[
+            { label: "Stores", value: "50+" },
+            { label: "Daily Sales", value: "2K+" },
+            { label: "Uptime", value: "99.9%" },
+          ].map(stat => (
+            <div key={stat.label} style={{
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: "16px", padding: "16px 12px",
+              textAlign: "center"
+            }}>
+              <div style={{ color: "white", fontWeight: 800, fontSize: "22px", letterSpacing: "-0.5px" }}>{stat.value}</div>
+              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "11px", marginTop: "2px" }}>{stat.label}</div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Right Panel */}
-      <div className="flex-1 flex items-center justify-center p-8 lg:max-w-xl relative z-10">
-        <div className="w-full max-w-md">
-          <div className="glass rounded-3xl p-8 border border-white/20 shadow-2xl animate-scaleIn">
-            <div className="flex items-center gap-2.5 mb-6 lg:hidden">
-              <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <ShoppingCart size={18} className="text-white" />
-              </div>
-              <span className="font-bold text-white text-lg tracking-tight">MultiPOS</span>
+      {/* RIGHT PANEL — Login Card */}
+      <div style={{
+        flex: "0 0 auto", width: "100%",
+        maxWidth: "clamp(340px, 45vw, 520px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "32px 24px", position: "relative", zIndex: 10
+      }}>
+        <div style={{ width: "100%", maxWidth: "440px" }}>
+          {/* Mobile logo */}
+          <div className="lg:hidden" style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "28px" }}>
+            <div style={{
+              width: "40px", height: "40px",
+              background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+              borderRadius: "12px",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 4px 20px rgba(99,102,241,0.4)"
+            }}>
+              <ShoppingCart size={18} color="white" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-1 tracking-tight">Welcome back</h2>
-            <p className="text-white/60 text-sm mb-6">Sign in to your account to continue</p>
+            <span style={{ color: "white", fontWeight: 800, fontSize: "20px", letterSpacing: "-0.5px" }}>MultiPOS</span>
+          </div>
 
-            <form onSubmit={handleLogin} className="space-y-4">
+          {/* Card */}
+          <div style={{
+            background: "rgba(255,255,255,0.06)",
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            borderRadius: "28px",
+            padding: "40px 36px",
+            boxShadow: "0 32px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12)"
+          }}>
+            {/* Header */}
+            <div style={{ marginBottom: "32px" }}>
+              <h2 style={{
+                color: "white", fontWeight: 800, fontSize: "28px",
+                letterSpacing: "-0.8px", marginBottom: "6px", lineHeight: 1.2
+              }}>
+                Welcome back
+              </h2>
+              <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "14px" }}>
+                Sign in to access your dashboard
+              </p>
+            </div>
+
+            <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              {/* Email */}
               <div>
-                <label className="text-xs font-semibold text-white/80 uppercase tracking-wider block mb-1.5">Email Address</label>
-                <div className="relative">
-                  <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+                <label style={{
+                  display: "block", marginBottom: "8px",
+                  color: "rgba(255,255,255,0.7)", fontSize: "12px",
+                  fontWeight: 600, letterSpacing: "0.8px", textTransform: "uppercase"
+                }}>
+                  Email Address
+                </label>
+                <div style={{ position: "relative" }}>
+                  <Mail size={15} style={{
+                    position: "absolute", left: "14px", top: "50%",
+                    transform: "translateY(-50%)", color: "rgba(255,255,255,0.35)", pointerEvents: "none"
+                  }} />
                   <input
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-white/30 transition-all duration-200"
                     placeholder="you@company.com"
                     required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-white/80 uppercase tracking-wider block mb-1.5">Password</label>
-                <div className="relative">
-                  <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-white/30 transition-all duration-200"
-                    placeholder="••••••••"
-                    required
+                    style={{
+                      width: "100%", boxSizing: "border-box",
+                      paddingLeft: "42px", paddingRight: "16px",
+                      paddingTop: "13px", paddingBottom: "13px",
+                      background: "rgba(255,255,255,0.07)",
+                      border: "1.5px solid rgba(255,255,255,0.1)",
+                      borderRadius: "14px",
+                      color: "white", fontSize: "14px",
+                      outline: "none", transition: "border-color 0.2s, background 0.2s"
+                    }}
+                    onFocus={e => {
+                      e.target.style.borderColor = "rgba(99,102,241,0.8)";
+                      e.target.style.background = "rgba(99,102,241,0.08)";
+                    }}
+                    onBlur={e => {
+                      e.target.style.borderColor = "rgba(255,255,255,0.1)";
+                      e.target.style.background = "rgba(255,255,255,0.07)";
+                    }}
                   />
                 </div>
               </div>
 
+              {/* Password */}
+              <div>
+                <label style={{
+                  display: "block", marginBottom: "8px",
+                  color: "rgba(255,255,255,0.7)", fontSize: "12px",
+                  fontWeight: 600, letterSpacing: "0.8px", textTransform: "uppercase"
+                }}>
+                  Password
+                </label>
+                <div style={{ position: "relative" }}>
+                  <Lock size={15} style={{
+                    position: "absolute", left: "14px", top: "50%",
+                    transform: "translateY(-50%)", color: "rgba(255,255,255,0.35)", pointerEvents: "none"
+                  }} />
+                  <input
+                    type={showPass ? "text" : "password"}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    style={{
+                      width: "100%", boxSizing: "border-box",
+                      paddingLeft: "42px", paddingRight: "48px",
+                      paddingTop: "13px", paddingBottom: "13px",
+                      background: "rgba(255,255,255,0.07)",
+                      border: "1.5px solid rgba(255,255,255,0.1)",
+                      borderRadius: "14px",
+                      color: "white", fontSize: "14px",
+                      outline: "none", transition: "border-color 0.2s, background 0.2s"
+                    }}
+                    onFocus={e => {
+                      e.target.style.borderColor = "rgba(99,102,241,0.8)";
+                      e.target.style.background = "rgba(99,102,241,0.08)";
+                    }}
+                    onBlur={e => {
+                      e.target.style.borderColor = "rgba(255,255,255,0.1)";
+                      e.target.style.background = "rgba(255,255,255,0.07)";
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass(v => !v)}
+                    style={{
+                      position: "absolute", right: "14px", top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none", border: "none", cursor: "pointer",
+                      color: "rgba(255,255,255,0.35)", padding: "0",
+                      display: "flex", alignItems: "center"
+                    }}
+                  >
+                    {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Error */}
               {error && (
-                <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-200 text-sm animate-fadeIn">
-                  <AlertCircle size={16} className="text-red-400 shrink-0" />
-                  <span>{error}</span>
+                <div style={{
+                  display: "flex", alignItems: "center", gap: "10px",
+                  padding: "12px 14px",
+                  background: "rgba(239,68,68,0.12)",
+                  border: "1px solid rgba(239,68,68,0.25)",
+                  borderRadius: "12px",
+                  color: "#fca5a5", fontSize: "13px"
+                }}>
+                  <AlertCircle size={15} style={{ flexShrink: 0, color: "#f87171" }} />
+                  {error}
                 </div>
               )}
 
+              {/* Submit */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 shadow-lg shadow-indigo-500/25 border border-white/10 cursor-pointer active:scale-[0.98]"
+                style={{
+                  width: "100%",
+                  padding: "14px",
+                  background: loading
+                    ? "rgba(99,102,241,0.5)"
+                    : "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
+                  border: "none",
+                  borderRadius: "14px",
+                  color: "white",
+                  fontWeight: 700,
+                  fontSize: "15px",
+                  letterSpacing: "0.2px",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                  boxShadow: "0 8px 32px rgba(99,102,241,0.4)",
+                  transition: "all 0.2s",
+                  transform: "translateY(0)"
+                }}
+                onMouseEnter={e => {
+                  if (!loading) {
+                    (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 12px 40px rgba(99,102,241,0.55)";
+                  }
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 32px rgba(99,102,241,0.4)";
+                }}
               >
-                {loading && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-                {loading ? "Signing in..." : "Sign In"}
+                {loading && (
+                  <span style={{
+                    width: "16px", height: "16px",
+                    border: "2px solid rgba(255,255,255,0.4)",
+                    borderTopColor: "white",
+                    borderRadius: "50%",
+                    display: "inline-block",
+                    animation: "spin 0.8s linear infinite"
+                  }} />
+                )}
+                {loading ? "Signing in…" : "Sign In"}
               </button>
             </form>
 
-            <div className="mt-8 border-t border-white/10 pt-6">
-              <p className="text-[11px] font-semibold text-white/40 uppercase tracking-wider text-center mb-3.5">Demo Accounts (Password: password123)</p>
-              <div className="grid grid-cols-2 gap-2">
-                {demoAccounts.map(acc => (
-                  <button
-                    key={acc.email}
-                    type="button"
-                    onClick={() => {
-                      setEmail(acc.email);
-                      setPassword("password123");
-                    }}
-                    className={`text-left px-3 py-2 rounded-xl border text-xs transition duration-200 cursor-pointer ${
-                      email === acc.email
-                        ? "bg-white/15 border-white/30 text-white ring-1 ring-indigo-400"
-                        : "bg-white/5 border-white/5 text-white/70 hover:bg-white/10 hover:text-white"
-                    }`}
-                  >
-                    <p className="font-semibold text-white">{acc.label}</p>
-                    <p className="opacity-50 truncate mt-0.5">{acc.email}</p>
-                  </button>
-                ))}
+            {/* Demo accounts */}
+            <div style={{ marginTop: "28px" }}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: "10px",
+                marginBottom: "14px"
+              }}>
+                <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.08)" }} />
+                <span style={{
+                  color: "rgba(255,255,255,0.3)", fontSize: "11px",
+                  fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase",
+                  whiteSpace: "nowrap"
+                }}>
+                  Quick Login · password123
+                </span>
+                <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.08)" }} />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                {demoAccounts.map(acc => {
+                  const isActive = email === acc.email;
+                  return (
+                    <button
+                      key={acc.email}
+                      type="button"
+                      onClick={() => {
+                        setEmail(acc.email);
+                        setPassword("password123");
+                      }}
+                      style={{
+                        textAlign: "left",
+                        padding: "12px 14px",
+                        background: isActive ? "rgba(99,102,241,0.18)" : "rgba(255,255,255,0.04)",
+                        border: `1.5px solid ${isActive ? "rgba(99,102,241,0.6)" : "rgba(255,255,255,0.07)"}`,
+                        borderRadius: "14px",
+                        cursor: "pointer",
+                        transition: "all 0.15s",
+                        outline: "none",
+                        boxShadow: isActive ? "0 0 0 1px rgba(99,102,241,0.2)" : "none"
+                      }}
+                      onMouseEnter={e => {
+                        if (!isActive) {
+                          (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.08)";
+                          (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.15)";
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        if (!isActive) {
+                          (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)";
+                          (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.07)";
+                        }
+                      }}
+                    >
+                      <div style={{
+                        display: "flex", alignItems: "center", gap: "6px", marginBottom: "3px"
+                      }}>
+                        <div style={{
+                          width: "6px", height: "6px", borderRadius: "50%",
+                          background: isActive ? "#818cf8" : "rgba(255,255,255,0.25)",
+                          flexShrink: 0
+                        }} />
+                        <span style={{
+                          color: isActive ? "white" : "rgba(255,255,255,0.75)",
+                          fontWeight: 700, fontSize: "12px", lineHeight: 1
+                        }}>
+                          {acc.label}
+                        </span>
+                        {acc.sublabel && (
+                          <span style={{
+                            color: "rgba(255,255,255,0.35)", fontSize: "10px", fontWeight: 500
+                          }}>
+                            · {acc.sublabel}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{
+                        color: "rgba(255,255,255,0.35)", fontSize: "11px",
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"
+                      }}>
+                        {acc.email}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
+
+          {/* Footer note */}
+          <p style={{
+            textAlign: "center", marginTop: "20px",
+            color: "rgba(255,255,255,0.2)", fontSize: "12px"
+          }}>
+            © 2025 MultiPOS · Secure & Encrypted
+          </p>
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        input::placeholder { color: rgba(255,255,255,0.25) !important; }
+        input:-webkit-autofill {
+          -webkit-box-shadow: 0 0 0 100px rgba(99,102,241,0.1) inset !important;
+          -webkit-text-fill-color: white !important;
+        }
+      `}</style>
     </div>
   );
 };

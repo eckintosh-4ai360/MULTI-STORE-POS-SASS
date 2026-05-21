@@ -8,6 +8,33 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model Organization {
+  id           String        @id @default(uuid())
+  name         String
+  slug         String        @unique
+  ownerEmail   String        @unique
+  createdAt    DateTime      @default(now())
+
+  subscription Subscription?
+  stores       Store[]
+  users        User[]
+}
+
+model Subscription {
+  id                   String       @id @default(uuid())
+  organizationId       String       @unique
+  organization         Organization @relation(fields: [organizationId], references: [id])
+  plan                 String       // "starter" | "pro" | "enterprise"
+  status               String       // "trialing" | "active" | "past_due" | "canceled"
+  stripeCustomerId     String?      @unique
+  stripeSubscriptionId String?      @unique
+  stripePriceId        String?
+  currentPeriodEnd     DateTime?
+  trialEnd             DateTime?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+}
+
 model Store {
   id             String         @id @default(uuid())
   name           String
@@ -20,7 +47,9 @@ model Store {
   receiptFooter  String?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
-  
+
+  organizationId String?
+  organization   Organization?  @relation(fields: [organizationId], references: [id])
   users          User[]
   categories     Category[]
   products       Product[]
@@ -35,12 +64,14 @@ model User {
   id           String    @id @default(uuid())
   name         String
   email        String    @unique
-  passwordHash String    @default("$2b$10$C9DZwr2egICIq9f65cgMs./TmVc.g9WnZmep7/un/vH7xE8Ga5hSi")
+  passwordHash String
   role         String    // "super_admin" | "store_admin" | "manager" | "cashier"
   status       String    // "active" | "inactive"
   createdAt    DateTime  @default(now())
   lastLogin    DateTime?
-  
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
   storeId   String?
   store     Store?    @relation(fields: [storeId], references: [id])
   sales     Sale[]

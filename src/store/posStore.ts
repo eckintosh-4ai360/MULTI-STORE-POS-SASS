@@ -182,11 +182,12 @@ export const usePOSStore = create<POSState>()(
       users: [],
 
       addUser: async (data) => {
-        const [set] = a;
+        const [set, get] = a;
         try {
+          const userId = get().currentUser?.id;
           const res = await fetch("/api/users", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...(userId ? { "x-user-id": userId } : {}) },
             body: JSON.stringify(data),
           });
           if (res.ok) {
@@ -199,11 +200,12 @@ export const usePOSStore = create<POSState>()(
       },
 
       updateUser: async (id, data) => {
-        const [set] = a;
+        const [set, get] = a;
         try {
+          const userId = get().currentUser?.id;
           const res = await fetch("/api/users", {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...(userId ? { "x-user-id": userId } : {}) },
             body: JSON.stringify({ id, ...data }),
           });
           if (res.ok) {
@@ -221,9 +223,10 @@ export const usePOSStore = create<POSState>()(
           const user = get().users.find((u) => u.id === id);
           if (!user) return;
           const newStatus = user.status === "active" ? "inactive" : "active";
+          const currentUserId = get().currentUser?.id;
           const res = await fetch("/api/users", {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...(currentUserId ? { "x-user-id": currentUserId } : {}) },
             body: JSON.stringify({ id, status: newStatus }),
           });
           if (res.ok) {
@@ -238,8 +241,11 @@ export const usePOSStore = create<POSState>()(
       // ── Data Sync ──
       fetchData: async () => {
         const [set, get] = a;
+        set({ isLoading: true, dataError: null });
         try {
-          const res = await fetch("/api/init");
+          const userId = get().currentUser?.id;
+          const headers: HeadersInit = userId ? { "x-user-id": userId } : {};
+          const res = await fetch("/api/init", { headers });
           if (res.ok) {
             const data = await res.json();
             set({
@@ -253,18 +259,32 @@ export const usePOSStore = create<POSState>()(
               suppliers: data.suppliers || [],
               purchaseOrders: data.purchaseOrders || [],
               heldSales: data.heldSales || [],
+              isLoading: false,
+              subscription: data.subscription || null,
             });
             const current = get().currentUser;
             if (current) {
               const freshUser = (data.users || []).find((u: User) => u.id === current.id);
               if (freshUser) set({ currentUser: freshUser });
             }
+
+          } else {
+            set({ isLoading: false, dataError: "Failed to load data. Please refresh." });
           }
         } catch (err) {
           console.error("Failed to fetch POS data:", err);
+          set({ isLoading: false, dataError: "Connection error. Check your internet." });
         }
       },
     }),
-    { name: "multipos-storage" }
+    {
+      name: "multipos-storage",
+      partialize: (state) => ({
+        currentStoreId: state.currentStoreId,
+        sidebarOpen: state.sidebarOpen,
+        activePage: state.activePage,
+        currentUser: state.currentUser,
+      }),
+    }
   )
 );

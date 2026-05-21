@@ -1,10 +1,10 @@
 import React from "react";
 import {
-  LayoutDashboard, ShoppingCart, Package, Users, Store, BarChart3,
+  LayoutDashboard, ShoppingCart, Package, Users, Store as StoreIcon, BarChart3,
   Settings, LogOut, Truck, Tag, FileText, ChevronLeft, ChevronRight,
   Boxes, ClipboardList, UserCheck, X
 } from "lucide-react";
-import { usePOSStore } from "../../store/posStore";
+import { usePOSStore, User, Store as PosStore } from "../../store/posStore";
 import { cn } from "../../utils/cn";
 
 const navGroups = [
@@ -42,7 +42,7 @@ const navGroups = [
   {
     label: "Admin",
     items: [
-      { id: "stores", label: "Stores", icon: Store },
+      { id: "stores", label: "Stores", icon: StoreIcon },
       { id: "settings", label: "Settings", icon: Settings },
     ],
   },
@@ -81,7 +81,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onMobileCl
       )}
 
       <aside className={cn(
-        "fixed left-0 top-0 h-screen glass-dark text-white flex flex-col z-40 transition-all duration-300",
+        "fixed left-0 top-0 h-screen glass border-r border-slate-200/50 text-slate-800 flex flex-col z-40 transition-all duration-300",
         // Desktop: collapsible
         "hidden md:flex",
         sidebarOpen ? "md:w-64" : "md:w-16"
@@ -104,7 +104,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onMobileCl
 
       {/* Mobile Drawer */}
       <aside className={cn(
-        "fixed left-0 top-0 h-screen glass-dark text-white flex flex-col z-40 transition-all duration-300 w-72 md:hidden",
+        "fixed left-0 top-0 h-screen glass border-r border-slate-200/50 text-slate-800 flex flex-col z-40 transition-all duration-300 w-72 md:hidden",
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <SidebarContent
@@ -133,9 +133,9 @@ interface SidebarContentProps {
   allowed: string[];
   activePage: string;
   handleNavClick: (id: string) => void;
-  currentUser: any;
-  currentStore: any;
-  stores: any[];
+  currentUser: User | null;
+  currentStore: PosStore | undefined;
+  stores: PosStore[];
   currentStoreId: string | null;
   setCurrentStore: (id: string) => void;
   logout: () => void;
@@ -150,15 +150,15 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
 }) => (
   <>
     {/* Logo */}
-    <div className="flex items-center justify-between px-4 py-4 border-b border-white/8">
+    <div className="flex items-center justify-between px-4 py-4 border-b border-slate-200/50">
       {sidebarOpen && (
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
             <ShoppingCart size={16} className="text-white" />
           </div>
           <div>
-            <span className="font-bold text-white text-sm tracking-tight">MultiPOS</span>
-            <p className="text-[10px] text-indigo-300/70">Retail Intelligence</p>
+            <span className="font-bold text-slate-800 text-sm tracking-tight">MultiPOS</span>
+            <p className="text-[10px] text-indigo-600/80 font-medium">Retail Intelligence</p>
           </div>
         </div>
       )}
@@ -168,11 +168,11 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
         </div>
       )}
       {showCloseButton ? (
-        <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-white/10 text-white/60 hover:text-white transition ml-auto">
+        <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition ml-auto">
           <X size={16} />
         </button>
       ) : (
-        <button onClick={toggleSidebar} className="p-1.5 rounded-xl hover:bg-white/10 text-white/60 hover:text-white transition ml-auto">
+        <button onClick={toggleSidebar} className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition ml-auto">
           {sidebarOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
         </button>
       )}
@@ -180,22 +180,22 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
 
     {/* Store Switcher */}
     {sidebarOpen && currentUser?.role === "super_admin" && (
-      <div className="px-3 py-2 border-b border-white/8">
-        <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1.5 px-1">Active Store</p>
+      <div className="px-3 py-2 border-b border-slate-200/50">
+        <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-1.5 px-1 font-semibold">Active Store</p>
         <select
           value={currentStoreId ?? ""}
           onChange={e => setCurrentStore(e.target.value)}
-          className="w-full bg-white/8 text-white text-xs rounded-xl px-3 py-2 border border-white/12 focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:bg-white/12 transition"
+          className="w-full bg-white/70 text-slate-800 text-xs rounded-xl px-3 py-2 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:bg-white transition"
         >
-          {stores.map(s => <option key={s.id} value={s.id} className="bg-slate-800">{s.name}</option>)}
+          {stores.map(s => <option key={s.id} value={s.id} className="bg-white text-slate-800">{s.name}</option>)}
         </select>
       </div>
     )}
 
     {sidebarOpen && currentStore && currentUser?.role !== "super_admin" && (
-      <div className="px-4 py-2.5 border-b border-white/8">
-        <p className="text-[10px] text-white/40 uppercase tracking-widest">Current Store</p>
-        <p className="text-xs font-semibold text-indigo-300 truncate mt-0.5">{currentStore.name}</p>
+      <div className="px-4 py-2.5 border-b border-slate-200/50">
+        <p className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Current Store</p>
+        <p className="text-xs font-bold text-indigo-600 truncate mt-0.5">{currentStore.name}</p>
       </div>
     )}
 
@@ -207,7 +207,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
         return (
           <div key={group.label}>
             {sidebarOpen && (
-              <p className="text-[10px] uppercase tracking-widest text-white/30 px-2 mb-1.5 font-semibold">{group.label}</p>
+              <p className="text-[10px] uppercase tracking-widest text-slate-400 px-2 mb-1.5 font-bold">{group.label}</p>
             )}
             <div className="space-y-0.5">
               {visibleItems.map(({ id, label, icon: Icon }) => (
@@ -217,16 +217,16 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                   className={cn(
                     "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 group",
                     activePage === id
-                      ? "bg-gradient-to-r from-indigo-500/30 to-purple-500/20 text-white border border-indigo-400/30 shadow-lg shadow-indigo-500/10"
-                      : "text-white/50 hover:bg-white/8 hover:text-white/90",
+                      ? "bg-indigo-50/80 text-indigo-700 font-semibold border border-indigo-100 shadow-sm shadow-indigo-500/5"
+                      : "text-slate-500 hover:bg-slate-100 hover:text-slate-800",
                     !sidebarOpen && "justify-center"
                   )}
                   title={!sidebarOpen ? label : undefined}
                 >
-                  <Icon size={17} className={cn("flex-shrink-0 transition-colors", activePage === id ? "text-indigo-300" : "text-white/40 group-hover:text-white/80")} />
-                  {sidebarOpen && <span className="truncate font-medium">{label}</span>}
+                  <Icon size={17} className={cn("flex-shrink-0 transition-colors", activePage === id ? "text-indigo-600" : "text-slate-400 group-hover:text-slate-600")} />
+                  {sidebarOpen && <span className="truncate font-semibold">{label}</span>}
                   {sidebarOpen && activePage === id && (
-                    <span className="ml-auto w-1.5 h-1.5 bg-indigo-400 rounded-full" />
+                    <span className="ml-auto w-1.5 h-1.5 bg-indigo-600 rounded-full" />
                   )}
                 </button>
               ))}
@@ -237,22 +237,22 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
     </nav>
 
     {/* User */}
-    <div className="border-t border-white/8 p-3">
+    <div className="border-t border-slate-200/50 p-3">
       {sidebarOpen ? (
-        <div className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-white/6 transition">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-md">
+        <div className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-100/50 transition">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0 shadow-md">
             {currentUser?.name?.[0] ?? "U"}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-white truncate">{currentUser?.name}</p>
-            <p className="text-[10px] text-white/40 capitalize">{currentUser?.role?.replace("_", " ")}</p>
+            <p className="text-xs font-bold text-slate-800 truncate">{currentUser?.name}</p>
+            <p className="text-[10px] text-slate-400 capitalize font-medium">{currentUser?.role?.replace("_", " ")}</p>
           </div>
-          <button onClick={logout} className="p-1.5 rounded-lg hover:bg-red-500/20 text-white/40 hover:text-red-400 transition" title="Logout">
+          <button onClick={logout} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition" title="Logout">
             <LogOut size={14} />
           </button>
         </div>
       ) : (
-        <button onClick={logout} className="w-full flex justify-center p-2 rounded-xl hover:bg-red-500/20 text-white/40 hover:text-red-400 transition" title="Logout">
+        <button onClick={logout} className="w-full flex justify-center p-2 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-500 transition" title="Logout">
           <LogOut size={18} />
         </button>
       )}

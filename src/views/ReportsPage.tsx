@@ -95,7 +95,14 @@ export const ReportsPage: React.FC = () => {
       {/* Period Selector */}
       <div className="flex gap-2">
         {[{ id: "7d", label: "Last 7 Days" }, { id: "30d", label: "Last 30 Days" }, { id: "month", label: "This Month" }].map(p => (
-          <button key={p.id} onClick={() => setPeriod(p.id as any)} className={cn("px-4 py-1.5 rounded-xl text-sm font-medium transition", period === p.id ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}>
+          <button
+            key={p.id}
+            onClick={() => setPeriod(p.id as any)}
+            className={cn("px-4 py-1.5 rounded-xl text-sm font-semibold tracking-wide transition duration-150",
+              period === p.id 
+                ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/20" 
+                : "glass border border-white/60 text-slate-600 hover:bg-white/40 hover:text-slate-800")}
+          >
             {p.label}
           </button>
         ))}
@@ -104,18 +111,18 @@ export const ReportsPage: React.FC = () => {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total Revenue", value: `GHS ${totalRevenue.toFixed(2)}`, icon: <DollarSign size={18} />, color: "text-indigo-600 bg-indigo-50" },
-          { label: "Gross Profit", value: `GHS ${totalProfit.toFixed(2)}`, icon: <TrendingUp size={18} />, color: "text-emerald-600 bg-emerald-50" },
-          { label: "Transactions", value: String(periodSales.length), icon: <ShoppingBag size={18} />, color: "text-amber-600 bg-amber-50" },
-          { label: "Avg. Sale Value", value: `GHS ${avgSale.toFixed(2)}`, icon: <Package size={18} />, color: "text-purple-600 bg-purple-50" },
+          { label: "Total Revenue", value: `GHS ${totalRevenue.toFixed(2)}`, icon: <DollarSign size={18} />, color: "text-indigo-600 bg-indigo-500/10" },
+          { label: "Gross Profit", value: `GHS ${totalProfit.toFixed(2)}`, icon: <TrendingUp size={18} />, color: "text-emerald-600 bg-emerald-500/10" },
+          { label: "Transactions", value: String(periodSales.length), icon: <ShoppingBag size={18} />, color: "text-amber-600 bg-amber-500/10" },
+          { label: "Avg. Sale Value", value: `GHS ${avgSale.toFixed(2)}`, icon: <Package size={18} />, color: "text-purple-600 bg-purple-500/10" },
         ].map(s => (
-          <div key={s.label} className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3">
+          <div key={s.label} className="glass-card rounded-2xl border border-white/60 p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition">
             <div className={`p-2.5 rounded-xl ${s.color.split(" ")[1]}`}>
               <span className={s.color.split(" ")[0]}>{s.icon}</span>
             </div>
             <div>
-              <p className="text-xs text-gray-500">{s.label}</p>
-              <p className="text-lg font-bold text-gray-800">{s.value}</p>
+              <p className="text-xs font-semibold text-slate-500/80 uppercase tracking-widest">{s.label}</p>
+              <p className="text-lg font-bold text-slate-800">{s.value}</p>
             </div>
           </div>
         ))}
@@ -123,17 +130,17 @@ export const ReportsPage: React.FC = () => {
 
       {/* Revenue vs Profit Chart */}
       <Card>
-        <CardHeader><h3 className="font-semibold text-gray-800">Revenue vs Profit Trend</h3></CardHeader>
+        <CardHeader><h3 className="font-semibold text-slate-800">Revenue vs Profit Trend</h3></CardHeader>
         <CardBody>
           <ResponsiveContainer width="100%" height={240}>
             <LineChart data={dailyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#64748b" }} />
+              <YAxis tick={{ fontSize: 11, fill: "#64748b" }} />
               <Tooltip formatter={(val, name) => [`GHS ${val}`, name === "revenue" ? "Revenue" : "Profit"]} />
-              <Legend formatter={v => <span className="text-xs text-gray-600 capitalize">{v}</span>} />
-              <Line type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="profit" stroke="#10b981" strokeWidth={2} dot={false} strokeDasharray="4 2" />
+              <Legend formatter={v => <span className="text-xs font-semibold text-slate-600 capitalize">{v}</span>} />
+              <Line type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={2.5} dot={false} />
+              <Line type="monotone" dataKey="profit" stroke="#10b981" strokeWidth={2.5} dot={false} strokeDasharray="4 2" />
             </LineChart>
           </ResponsiveContainer>
         </CardBody>
@@ -142,13 +149,13 @@ export const ReportsPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Top Products */}
         <Card>
-          <CardHeader><h3 className="font-semibold text-gray-800">Top Products by Revenue</h3></CardHeader>
+          <CardHeader><h3 className="font-semibold text-slate-800">Top Products by Revenue</h3></CardHeader>
           <CardBody>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={topProducts} layout="vertical" barSize={16}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={100} />
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                <XAxis type="number" tick={{ fontSize: 11, fill: "#64748b" }} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: "#64748b" }} width={100} />
                 <Tooltip formatter={(val) => [`GHS ${val}`, "Revenue"]} />
                 <Bar dataKey="revenue" fill="#6366f1" radius={[0, 6, 6, 0]} />
               </BarChart>
@@ -158,7 +165,7 @@ export const ReportsPage: React.FC = () => {
 
         {/* Payment Methods */}
         <Card>
-          <CardHeader><h3 className="font-semibold text-gray-800">Payment Methods</h3></CardHeader>
+          <CardHeader><h3 className="font-semibold text-slate-800">Payment Methods</h3></CardHeader>
           <CardBody>
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
@@ -166,7 +173,7 @@ export const ReportsPage: React.FC = () => {
                   {paymentBreakdown.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
                 </Pie>
                 <Tooltip formatter={(val) => [`GHS ${val}`, ""]} />
-                <Legend iconType="circle" iconSize={8} formatter={v => <span className="text-xs text-gray-600 capitalize">{v}</span>} />
+                <Legend iconType="circle" iconSize={8} formatter={v => <span className="text-xs font-semibold text-slate-600 capitalize">{v}</span>} />
               </PieChart>
             </ResponsiveContainer>
           </CardBody>
@@ -176,27 +183,27 @@ export const ReportsPage: React.FC = () => {
       {/* Store Comparison (super admin) */}
       {isSuperAdmin && (
         <Card>
-          <CardHeader><h3 className="font-semibold text-gray-800">Store Performance Comparison</h3></CardHeader>
+          <CardHeader><h3 className="font-semibold text-slate-800">Store Performance Comparison</h3></CardHeader>
           <CardBody>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100 text-left">
-                    <th className="pb-3 text-xs font-semibold text-gray-500 uppercase">Store</th>
-                    <th className="pb-3 text-xs font-semibold text-gray-500 uppercase text-right">Transactions</th>
-                    <th className="pb-3 text-xs font-semibold text-gray-500 uppercase text-right">Revenue</th>
-                    <th className="pb-3 text-xs font-semibold text-gray-500 uppercase text-right">Profit</th>
-                    <th className="pb-3 text-xs font-semibold text-gray-500 uppercase text-right">Margin</th>
+                  <tr className="border-b border-slate-200/50 bg-slate-50/30 text-left">
+                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Store</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Transactions</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Revenue</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Profit</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Margin</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-slate-100/50">
                   {storeComparison.map((s, i) => (
-                    <tr key={i} className="hover:bg-gray-50/50">
-                      <td className="py-3 font-medium text-gray-800">{s.name}</td>
-                      <td className="py-3 text-right text-gray-600">{s.count}</td>
-                      <td className="py-3 text-right font-semibold text-gray-800">GHS {s.revenue.toFixed(2)}</td>
-                      <td className="py-3 text-right text-emerald-600 font-medium">GHS {s.profit.toFixed(2)}</td>
-                      <td className="py-3 text-right text-gray-500">{s.revenue ? ((s.profit / s.revenue) * 100).toFixed(1) : 0}%</td>
+                    <tr key={i} className="hover:bg-slate-50/50 transition">
+                      <td className="px-4 py-3 font-semibold text-slate-800">{s.name}</td>
+                      <td className="px-4 py-3 text-right text-slate-600 font-medium">{s.count}</td>
+                      <td className="px-4 py-3 text-right font-bold text-slate-800">GHS {s.revenue.toFixed(2)}</td>
+                      <td className="px-4 py-3 text-right text-emerald-600 font-bold">GHS {s.profit.toFixed(2)}</td>
+                      <td className="px-4 py-3 text-right text-slate-500 font-semibold">{s.revenue ? ((s.profit / s.revenue) * 100).toFixed(1) : 0}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -208,25 +215,25 @@ export const ReportsPage: React.FC = () => {
 
       {/* Transactions Table */}
       <Card>
-        <CardHeader><h3 className="font-semibold text-gray-800">Daily Transactions Summary</h3></CardHeader>
+        <CardHeader><h3 className="font-semibold text-slate-800">Daily Transactions Summary</h3></CardHeader>
         <CardBody>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 text-left">
-                  <th className="pb-3 text-xs font-semibold text-gray-500 uppercase">Date</th>
-                  <th className="pb-3 text-xs font-semibold text-gray-500 uppercase text-right">Sales</th>
-                  <th className="pb-3 text-xs font-semibold text-gray-500 uppercase text-right">Revenue</th>
-                  <th className="pb-3 text-xs font-semibold text-gray-500 uppercase text-right">Profit</th>
+                <tr className="border-b border-slate-200/50 bg-slate-50/30 text-left">
+                  <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Sales</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Revenue</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Profit</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-slate-100/50">
                 {dailyData.slice(-10).reverse().map((d, i) => (
-                  <tr key={i} className="hover:bg-gray-50/50">
-                    <td className="py-2.5 text-gray-700">{d.day}</td>
-                    <td className="py-2.5 text-right text-gray-600">{d.count}</td>
-                    <td className="py-2.5 text-right font-medium text-gray-800">GHS {d.revenue.toFixed(2)}</td>
-                    <td className="py-2.5 text-right text-emerald-600">GHS {d.profit.toFixed(2)}</td>
+                  <tr key={i} className="hover:bg-slate-50/50 transition">
+                    <td className="px-4 py-2.5 text-slate-700 font-medium">{d.day}</td>
+                    <td className="px-4 py-2.5 text-right text-slate-600 font-medium">{d.count}</td>
+                    <td className="px-4 py-2.5 text-right font-bold text-slate-800">GHS {d.revenue.toFixed(2)}</td>
+                    <td className="px-4 py-2.5 text-right text-emerald-600 font-bold">GHS {d.profit.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>

@@ -78,38 +78,38 @@ export const UsersPage: React.FC = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {(["super_admin", "store_admin", "manager", "cashier"] as Role[]).map(r => (
-          <div key={r} className="bg-white rounded-2xl border border-gray-100 p-4">
-            <p className="text-xs text-gray-500 capitalize">{r.replace("_", " ")}</p>
-            <p className="text-2xl font-bold text-gray-800 mt-0.5">{byRole(r).length}</p>
-            <p className="text-xs text-gray-400">{byRole(r).filter(u => u.status === "active").length} active</p>
+          <div key={r} className="glass-stat-card rounded-2xl p-4">
+            <p className="text-xs text-slate-500 capitalize">{r.replace("_", " ")}</p>
+            <p className="text-2xl font-bold text-slate-800 mt-0.5">{byRole(r).length}</p>
+            <p className="text-xs text-slate-400">{byRole(r).filter(u => u.status === "active").length} active</p>
           </div>
         ))}
       </div>
 
       {/* User Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="glass-card rounded-2xl border border-white/60 overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-100">
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">User</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Role</th>
-              {isSuperAdmin && <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Store</th>}
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Joined</th>
-              {isAdmin && <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Actions</th>}
+            <tr className="border-b border-slate-200/40 bg-indigo-500/5">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">User</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Role</th>
+              {isSuperAdmin && <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Store</th>}
+              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Joined</th>
+              {isAdmin && <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Actions</th>}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-slate-100/50">
             {visibleUsers.map(u => (
-              <tr key={u.id} className="hover:bg-gray-50/50 transition">
+              <tr key={u.id} className="hover:bg-white/30 border-b border-slate-100/50 last:border-0 transition">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
                       {u.name[0]}
                     </div>
                     <div>
-                      <p className="font-medium text-gray-800">{u.name}</p>
-                      <p className="text-xs text-gray-400">{u.email}</p>
+                      <p className="font-medium text-slate-800">{u.name}</p>
+                      <p className="text-xs text-slate-400">{u.email}</p>
                     </div>
                   </div>
                 </td>
@@ -118,17 +118,17 @@ export const UsersPage: React.FC = () => {
                     {roleIcons[u.role]} {u.role.replace("_", " ")}
                   </Badge>
                 </td>
-                {isSuperAdmin && <td className="px-4 py-3 text-xs text-gray-500">{storeName(u.storeId)}</td>}
+                {isSuperAdmin && <td className="px-4 py-3 text-xs text-slate-500">{storeName(u.storeId)}</td>}
                 <td className="px-4 py-3">
                   <Badge variant={u.status === "active" ? "success" : "neutral"}>{u.status}</Badge>
                 </td>
-                <td className="px-4 py-3 text-xs text-gray-500">{format(new Date(u.createdAt), "dd MMM yyyy")}</td>
+                <td className="px-4 py-3 text-xs text-slate-500">{format(new Date(u.createdAt), "dd MMM yyyy")}</td>
                 {isAdmin && (
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
-                      <button onClick={() => openEdit(u)} className="p-1.5 text-blue-400 hover:bg-blue-50 rounded-lg transition"><Edit2 size={14} /></button>
+                      <button onClick={() => openEdit(u)} className="p-1.5 text-indigo-600 hover:bg-white/50 rounded-lg transition"><Edit2 size={14} /></button>
                       {u.id !== currentUser?.id && (
-                        <button onClick={() => toggleUserStatus(u.id)} className={`p-1.5 rounded-lg transition ${u.status === "active" ? "text-amber-400 hover:bg-amber-50" : "text-emerald-400 hover:bg-emerald-50"}`}>
+                        <button onClick={() => toggleUserStatus(u.id)} className={`p-1.5 rounded-lg transition ${u.status === "active" ? "text-amber-700 hover:bg-amber-500/10" : "text-emerald-700 hover:bg-emerald-500/10"}`}>
                           {u.status === "active" ? <UserX size={14} /> : <UserCheck size={14} />}
                         </button>
                       )}
@@ -170,8 +170,8 @@ export const UsersPage: React.FC = () => {
               options={stores.map(s => ({ value: s.id, label: s.name }))}
             />
           )}
-          <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
-            <p className="text-xs text-blue-600"><Shield size={12} className="inline mr-1" />Default password is "password123". Users should change it upon first login.</p>
+          <div className="p-3 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+            <p className="text-xs text-indigo-700"><Shield size={12} className="inline mr-1" />Default password is "password123". Users should change it upon first login.</p>
           </div>
         </div>
       </Modal>

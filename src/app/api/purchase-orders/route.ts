@@ -79,6 +79,16 @@ export async function PUT(req: Request) {
           });
         }
 
+        // Update supplier balance: add order total as amount owed
+        await tx.supplier.update({
+          where: { id: order.supplierId },
+          data: {
+            balance: {
+              increment: order.total,
+            },
+          },
+        });
+
         return updatedOrder;
       });
 

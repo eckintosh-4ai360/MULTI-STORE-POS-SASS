@@ -36,7 +36,7 @@ export const CategoriesPage: React.FC = () => {
         {visibleCats.map((cat, i) => {
           const count = productCount(cat.id);
           return (
-            <div key={cat.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition">
+            <div key={cat.id} className="glass-card rounded-2xl border border-white/60 shadow-sm overflow-hidden hover:shadow-md transition">
               <div className={`h-2 ${catColors[i % catColors.length]}`} />
               <div className="p-5">
                 <div className={`w-10 h-10 rounded-xl ${catColors[i % catColors.length]} flex items-center justify-center mb-3`}>

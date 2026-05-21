@@ -76,19 +76,19 @@ export const StoresPage: React.FC = () => {
           const storeUsers = users.filter(u => u.storeId === store.id);
           const storeRevenue = storeSales.reduce((sum, s) => sum + s.total, 0);
           return (
-            <div key={store.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition">
+            <div key={store.id} className="glass-card rounded-2xl border border-white/60 overflow-hidden hover:shadow-md transition">
               {/* Header */}
-              <div className={`h-2 ${store.status === "active" ? "bg-gradient-to-r from-indigo-500 to-purple-500" : "bg-gray-300"}`} />
+              <div className={`h-2 ${store.status === "active" ? "bg-gradient-to-r from-indigo-500 to-purple-500" : "bg-slate-300"}`} />
               <div className="p-5">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       {store.logo && (
-                        <img src={store.logo} alt={store.name} className="w-8 h-8 rounded-full border border-gray-100 object-cover flex-shrink-0" />
+                        <img src={store.logo} alt={store.name} className="w-8 h-8 rounded-full border border-slate-200/50 object-cover flex-shrink-0" />
                       )}
-                      <h3 className="font-bold text-gray-800 text-lg">{store.name}</h3>
+                      <h3 className="font-bold text-slate-800 text-lg">{store.name}</h3>
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+                    <div className="flex items-center gap-1 text-xs text-slate-500 mt-0.5">
                       <MapPin size={11} />{store.location}
                     </div>
                   </div>
@@ -97,39 +97,39 @@ export const StoresPage: React.FC = () => {
 
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-3 my-4">
-                  <div className="text-center p-2 bg-indigo-50 rounded-xl">
+                  <div className="text-center p-2 bg-indigo-500/10 rounded-xl">
                     <p className="text-sm font-bold text-indigo-700">{storeProducts.length}</p>
-                    <p className="text-[10px] text-gray-500">Products</p>
+                    <p className="text-[10px] text-slate-500">Products</p>
                   </div>
-                  <div className="text-center p-2 bg-emerald-50 rounded-xl">
+                  <div className="text-center p-2 bg-emerald-500/10 rounded-xl">
                     <p className="text-sm font-bold text-emerald-700">{storeSales.length}</p>
-                    <p className="text-[10px] text-gray-500">Sales</p>
+                    <p className="text-[10px] text-slate-500">Sales</p>
                   </div>
-                  <div className="text-center p-2 bg-purple-50 rounded-xl">
+                  <div className="text-center p-2 bg-purple-500/10 rounded-xl">
                     <p className="text-sm font-bold text-purple-700">{storeUsers.length}</p>
-                    <p className="text-[10px] text-gray-500">Staff</p>
+                    <p className="text-[10px] text-slate-500">Staff</p>
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-3 flex items-center justify-between mb-4">
+                <div className="bg-white/40 border border-slate-200/40 rounded-xl p-3 flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-xs text-gray-500">Total Revenue</p>
-                    <p className="font-bold text-gray-800">{store.currency} {storeRevenue.toFixed(2)}</p>
+                    <p className="text-xs text-slate-500">Total Revenue</p>
+                    <p className="font-bold text-slate-800">{store.currency} {storeRevenue.toFixed(2)}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-gray-500">Tax Rate</p>
-                    <p className="font-bold text-gray-800">{store.taxRate}%</p>
+                    <p className="text-xs text-slate-500">Tax Rate</p>
+                    <p className="font-bold text-slate-800">{store.taxRate}%</p>
                   </div>
                 </div>
 
                 <div className="flex gap-2">
                   <button
                     onClick={() => toggleStoreStatus(store.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition flex-1 justify-center ${store.status === "active" ? "text-amber-600 bg-amber-50 hover:bg-amber-100" : "text-emerald-600 bg-emerald-50 hover:bg-emerald-100"}`}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition flex-1 justify-center ${store.status === "active" ? "text-amber-700 bg-amber-500/10 hover:bg-amber-500/20" : "text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20"}`}
                   >
                     {store.status === "active" ? <><ToggleLeft size={14} />Deactivate</> : <><ToggleRight size={14} />Activate</>}
                   </button>
-                  <button onClick={() => openEdit(store)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 transition flex-1 justify-center">
+                  <button onClick={() => openEdit(store)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-indigo-700 bg-indigo-500/10 hover:bg-indigo-500/20 transition flex-1 justify-center">
                     <Edit2 size={14} /> Edit Store
                   </button>
                 </div>
@@ -168,7 +168,7 @@ export const StoresPage: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <div className="w-12 h-12 rounded-xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-400 text-xs flex-shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-white/50 border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-400 text-xs flex-shrink-0">
                   None
                 </div>
               )}
@@ -177,7 +177,7 @@ export const StoresPage: React.FC = () => {
                 accept="image/*" 
                 onChange={handleLogoUpload} 
                 disabled={uploading}
-                className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 file:cursor-pointer"
+                className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-500/10 file:text-indigo-700 hover:file:bg-indigo-500/20 file:cursor-pointer"
               />
               {uploading && <span className="text-[10px] text-gray-400">Uploading...</span>}
             </div>

@@ -51,18 +51,18 @@ export const InventoryPage: React.FC = () => {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Stock Received", value: summary.in, icon: <ArrowDownCircle size={18} />, color: "text-emerald-600 bg-emerald-50" },
-          { label: "Stock Removed", value: summary.out, icon: <ArrowUpCircle size={18} />, color: "text-red-500 bg-red-50" },
-          { label: "Transferred", value: summary.transfers, icon: <ArrowLeftRight size={18} />, color: "text-blue-600 bg-blue-50" },
-          { label: "Units Sold", value: summary.sales, icon: <ShoppingCart size={18} />, color: "text-indigo-600 bg-indigo-50" },
+          { label: "Stock Received", value: summary.in, icon: <ArrowDownCircle size={18} />, color: "text-emerald-600 bg-emerald-500/10" },
+          { label: "Stock Removed", value: summary.out, icon: <ArrowUpCircle size={18} />, color: "text-red-600 bg-red-500/10" },
+          { label: "Transferred", value: summary.transfers, icon: <ArrowLeftRight size={18} />, color: "text-blue-600 bg-blue-500/10" },
+          { label: "Units Sold", value: summary.sales, icon: <ShoppingCart size={18} />, color: "text-indigo-600 bg-indigo-500/10" },
         ].map(s => (
-          <div key={s.label} className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3">
+          <div key={s.label} className="glass-card rounded-2xl border border-white/60 p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition">
             <div className={`p-2.5 rounded-xl ${s.color.split(" ")[1]}`}>
               <span className={s.color.split(" ")[0]}>{s.icon}</span>
             </div>
             <div>
-              <p className="text-xs text-gray-500">{s.label}</p>
-              <p className="text-xl font-bold text-gray-800">{s.value} units</p>
+              <p className="text-xs font-semibold text-slate-500/80 uppercase tracking-widest">{s.label}</p>
+              <p className="text-xl font-bold text-slate-800">{s.value} units</p>
             </div>
           </div>
         ))}
@@ -75,16 +75,24 @@ export const InventoryPage: React.FC = () => {
             <button
               key={f}
               onClick={() => setTypeFilter(f)}
-              className={cn("px-3 py-1.5 rounded-xl text-xs font-medium transition",
-                typeFilter === f ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
+              className={cn("px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition duration-150",
+                typeFilter === f 
+                  ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/20" 
+                  : "glass border border-white/60 text-slate-600 hover:bg-white/40 hover:text-slate-800")}
             >
               {f === "all" ? "All Movements" : f}
             </button>
           ))}
         </div>
         <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search product..." className="pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-56" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search product..."
+            className="pl-9 pr-4 py-2 rounded-xl text-sm w-56 glass-input border border-white/60 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500/50"
+          />
         </div>
       </div>
 
@@ -93,20 +101,20 @@ export const InventoryPage: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Date & Time</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Product</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Type</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Quantity</th>
-                {isSuperAdmin && <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Store</th>}
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Note</th>
+              <tr className="border-b border-slate-200/50 bg-slate-50/30">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Date & Time</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Product</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Type</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Quantity</th>
+                {isSuperAdmin && <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Store</th>}
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Note</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-slate-100/50">
               {filtered.map(log => (
-                <tr key={log.id} className="hover:bg-gray-50/50 transition">
-                  <td className="px-4 py-3 text-xs text-gray-500">{format(new Date(log.createdAt), "dd MMM yyyy HH:mm")}</td>
-                  <td className="px-4 py-3 font-medium text-gray-800">{log.productName}</td>
+                <tr key={log.id} className="hover:bg-slate-50/50 transition">
+                  <td className="px-4 py-3 text-xs text-slate-500">{format(new Date(log.createdAt), "dd MMM yyyy HH:mm")}</td>
+                  <td className="px-4 py-3 font-semibold text-slate-800">{log.productName}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1.5">
                       {typeIcons[log.type as keyof typeof typeIcons]}
@@ -114,18 +122,18 @@ export const InventoryPage: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={cn("font-semibold", log.type === "IN" || log.type === "TRANSFER" ? "text-emerald-600" : "text-red-500")}>
+                    <span className={cn("font-bold", log.type === "IN" || log.type === "TRANSFER" ? "text-emerald-600" : "text-rose-600")}>
                       {log.type === "IN" || log.type === "TRANSFER" ? "+" : "-"}{log.qty}
                     </span>
                   </td>
-                  {isSuperAdmin && <td className="px-4 py-3 text-xs text-gray-500">{storeName(log.storeId)}</td>}
-                  <td className="px-4 py-3 text-xs text-gray-400">{log.note ?? "—"}</td>
+                  {isSuperAdmin && <td className="px-4 py-3 text-xs text-slate-500">{storeName(log.storeId)}</td>}
+                  <td className="px-4 py-3 text-xs text-slate-500 font-medium">{log.note ?? "—"}</td>
                 </tr>
               ))}
               {!filtered.length && (
                 <tr>
-                  <td colSpan={isSuperAdmin ? 6 : 5} className="py-16 text-center text-gray-400 text-sm">
-                    <ArrowLeftRight size={36} className="mx-auto mb-2 opacity-40" />
+                  <td colSpan={isSuperAdmin ? 6 : 5} className="py-16 text-center text-slate-400 text-sm font-medium">
+                    <ArrowLeftRight size={36} className="mx-auto mb-2 opacity-40 text-slate-400" />
                     No inventory movements found
                   </td>
                 </tr>

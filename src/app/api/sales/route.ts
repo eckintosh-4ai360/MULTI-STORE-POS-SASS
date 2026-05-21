@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../utils/prismaClient";
+import { requireAuth, isNextResponse } from "../../../utils/apiAuth";
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireAuth(req);
+    if (isNextResponse(auth)) return auth;
     const data = await req.json();
     const {
       invoiceNo,

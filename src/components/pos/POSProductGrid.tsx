@@ -60,7 +60,14 @@ export const POSProductGrid: React.FC<POSProductGridProps> = ({
             placeholder="Search product or scan barcode..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && products.length === 1) {
+                onAddToCart(products[0]);
+                setSearch("");
+              }
+            }}
             className="w-full pl-10 pr-4 py-2.5 glass-input rounded-xl text-sm"
+            autoFocus
           />
         </div>
         <button
