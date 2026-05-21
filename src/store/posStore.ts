@@ -215,6 +215,9 @@ interface POSState {
   isLoading: boolean;
   dataError: string | null;
 
+  // Organization
+  organization: { id: string; name: string; slug: string; ownerEmail: string } | null;
+
   // Actions — Data
   fetchData: () => Promise<void>;
 
@@ -318,14 +321,15 @@ export const usePOSStore = create<POSState>()(
     (set, get) => ({
       currentUser: null,
       currentStoreId: null,
-      stores: seedStores,
-      users: seedUsers,
-      categories: seedCategories,
-      products: seedProducts,
-      customers: seedCustomers,
-      sales: seedSales,
-      inventoryLogs: seedInventoryLogs,
-      suppliers: seedSuppliers,
+      // Start with empty arrays — real data loads via fetchData() after login
+      stores: [],
+      users: [],
+      categories: [],
+      products: [],
+      customers: [],
+      sales: [],
+      inventoryLogs: [],
+      suppliers: [],
       purchaseOrders: [],
       heldSales: [],
       cart: [],
@@ -335,12 +339,57 @@ export const usePOSStore = create<POSState>()(
       sidebarOpen: true,
       isLoading: false,
       dataError: null,
+      organization: null,
 
       // ── Data ──
       fetchData: async () => {
-        // Data is seeded locally — nothing to fetch from an API.
-        // This exists so App.tsx can call it without errors.
-        set({ isLoading: false, dataError: null });
+        const currentUser = get().currentUser;
+        if (!currentUser?.id) return; // Not logged in, nothing to fetch
+
+        set({ isLoading: true, dataError: null });
+        try {
+          const res = await fetch("/api/init", {
+            headers: { "x-user-id": currentUser.id },
+          });
+
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            set({ isLoading: false, dataError: errData.error || "Failed to load data. Please refresh." });
+            return;
+          }
+
+          const data = await res.json();
+
+          // Pick the right store for this user
+          const storeId =
+            currentUser.storeId ??
+            (data.stores as Store[]).find((s: Store) => s.status === "active")?.id ??
+            null;
+
+          set({
+            stores: data.stores || [],
+            users: data.users || [],
+            categories: data.categories || [],
+            products: data.products || [],
+            customers: data.customers || [],
+            sales: data.sales || [],
+            inventoryLogs: data.inventoryLogs || [],
+            suppliers: data.suppliers || [],
+            purchaseOrders: data.purchaseOrders || [],
+            heldSales: data.heldSales || [],
+            organization: data.organization || null,
+            currentStoreId: get().currentStoreId || storeId,
+            isLoading: false,
+          });
+
+          // Update subscription
+          if (data.subscription && typeof get().setSubscription === "function") {
+            get().setSubscription(data.subscription);
+          }
+        } catch (err) {
+          console.error("fetchData error:", err);
+          set({ isLoading: false, dataError: "Connection error. Please check your network." });
+        }
       },
 
       // ── Auth ──
@@ -473,6 +522,17 @@ export const usePOSStore = create<POSState>()(
       setActivePage: (page) => set({ activePage: page }),
       toggleSidebar: () => set(s => ({ sidebarOpen: !s.sidebarOpen })),
     }),
-    { name: "multipos-storage" }
+    {
+      name: "multipos-storage",
+      // Only persist minimal session state — never cache data arrays.
+      // All business data (stores, products, sales, etc.) is fetched fresh
+      // from the server on every login via fetchData().
+      partialize: (state) => ({
+        currentUser: state.currentUser,
+        currentStoreId: state.currentStoreId,
+        activePage: state.activePage,
+        sidebarOpen: state.sidebarOpen,
+      }),
+    }
   )
 );

@@ -19,7 +19,6 @@ export interface AuthSlice {
   setSubscription: (sub: SubscriptionData | null) => void;
 }
 
-
 export const createAuthSlice: StateCreator<POSState, [], [], AuthSlice> = (set, get) => ({
   currentUser: null,
   currentStoreId: null,
@@ -36,16 +35,12 @@ export const createAuthSlice: StateCreator<POSState, [], [], AuthSlice> = (set, 
       if (!res.ok) return false;
       const user = await res.json();
 
-      // Fetch all data after successful auth
-      await get().fetchData();
-
-      const storeId =
-        user.storeId ??
-        get().stores.find((s) => s.status === "active")?.id ??
-        null;
-
+      // Set currentUser FIRST so fetchData() can use the user id for auth
       const loggedInUser: User = { ...user, lastLogin: new Date().toISOString() };
-      set({ currentUser: loggedInUser, currentStoreId: storeId });
+      set({ currentUser: loggedInUser });
+
+      // Now fetch all org-scoped data from the server
+      await get().fetchData();
 
       // Log lastLogin asynchronously without blocking
       fetch("/api/users", {
@@ -62,7 +57,25 @@ export const createAuthSlice: StateCreator<POSState, [], [], AuthSlice> = (set, 
   },
 
   logout: () =>
-    set({ currentUser: null, currentStoreId: null, cart: [], activePage: "dashboard" }),
+    set({
+      currentUser: null,
+      currentStoreId: null,
+      subscription: null,
+      organization: null,
+      cart: [],
+      activePage: "dashboard",
+      // Clear all org-scoped data so next login starts fresh
+      stores: [],
+      users: [],
+      categories: [],
+      products: [],
+      customers: [],
+      sales: [],
+      inventoryLogs: [],
+      suppliers: [],
+      purchaseOrders: [],
+      heldSales: [],
+    }),
 
   setCurrentStore: (storeId) => set({ currentStoreId: storeId }),
 });
