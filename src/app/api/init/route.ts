@@ -268,7 +268,7 @@ export async function GET(request: Request) {
           status: true,
           trialEnd: true,
           currentPeriodEnd: true,
-          stripeCustomerId: true,
+          paystackCustomerCode: true,
         },
       });
     }

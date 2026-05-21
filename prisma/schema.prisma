@@ -26,9 +26,9 @@ model Subscription {
   organization         Organization @relation(fields: [organizationId], references: [id])
   plan                 String       // "starter" | "pro" | "enterprise"
   status               String       // "trialing" | "active" | "past_due" | "canceled"
-  stripeCustomerId     String?      @unique
-  stripeSubscriptionId String?      @unique
-  stripePriceId        String?
+  paystackCustomerCode      String?      @unique
+  paystackSubscriptionCode  String?      @unique
+  paystackPlanCode          String?
   currentPeriodEnd     DateTime?
   trialEnd             DateTime?
   createdAt            DateTime     @default(now())

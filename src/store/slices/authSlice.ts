@@ -6,7 +6,7 @@ export interface SubscriptionData {
   status: string;
   trialEnd?: string | null;
   currentPeriodEnd?: string | null;
-  stripeCustomerId?: string | null;
+  paystackCustomerCode?: string | null;
 }
 
 export interface AuthSlice {

@@ -226,25 +226,21 @@ export const SettingsPage: React.FC = () => {
 
           const handleUpgrade = async (targetPlan: string) => {
             try {
-              const res = await fetch("/api/stripe/checkout", {
+              const res = await fetch("/api/paystack/initialize", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", ...(currentUser?.id ? { "x-user-id": currentUser.id } : {}) },
                 body: JSON.stringify({ plan: targetPlan }),
               });
               const data = await res.json();
               if (data.url) window.location.href = data.url;
+              else alert(data.error || "Failed to start payment");
             } catch (e) { console.error(e); }
           };
 
           const handlePortal = async () => {
-            try {
-              const res = await fetch("/api/stripe/portal", {
-                method: "POST",
-                headers: { ...(currentUser?.id ? { "x-user-id": currentUser.id } : {}) },
-              });
-              const data = await res.json();
-              if (data.url) window.location.href = data.url;
-            } catch (e) { console.error(e); }
+            // Paystack does not have a hosted billing portal.
+            // Direct users to the Paystack customer dashboard or your custom billing page.
+            window.open("https://dashboard.paystack.com", "_blank");
           };
 
           return (
@@ -306,7 +302,7 @@ export const SettingsPage: React.FC = () => {
                       Upgrade to {plan === "starter" ? "Pro" : "Enterprise"}
                     </Button>
                   ) : null}
-                  {subscription?.stripeCustomerId && (
+                  {subscription?.paystackCustomerCode && (
                     <Button variant="secondary" onClick={handlePortal} icon={<CreditCard size={15} />}>Manage Billing</Button>
                   )}
                 </div>
@@ -323,7 +319,7 @@ export const SettingsPage: React.FC = () => {
                     return (
                       <div key={p} className={`p-4 rounded-2xl border-2 ${isCurrent ? "border-indigo-400 bg-indigo-50/50" : "border-slate-100"}`}>
                         <p className="font-bold text-slate-800 text-sm capitalize mb-1">{getPlanLabel(p)}</p>
-                        <p className="text-2xl font-black text-slate-900">${prices[p]}<span className="text-xs text-slate-400 font-normal">/mo</span></p>
+                        <p className="text-2xl font-black text-slate-900">GHS {prices[p]}<span className="text-xs text-slate-400 font-normal">/mo</span></p>
                         <ul className="mt-3 space-y-1 text-xs text-slate-500">
                           <li>{lim.stores === Infinity ? "Unlimited" : lim.stores} store{lim.stores !== 1 ? "s" : ""}</li>
                           <li>{lim.users === Infinity ? "Unlimited" : lim.users} users</li>
