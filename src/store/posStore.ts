@@ -1,4 +1,4 @@
-﻿import { create } from "zustand";
+import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -397,11 +397,57 @@ export const usePOSStore = create<POSState>()(
         }
       },
 
-      // ── Auth (implemented by authSlice) ──
-      // login, logout, setCurrentStore, setSubscription are provided by authSlice
-      // These stubs satisfy the type — authSlice overrides them via compose/merge
-      login: async (_email: string, _password: string) => false,
-      logout: () => set({ currentUser: null, currentStoreId: null, cart: [], activePage: "dashboard" }),
+      // ── Auth ──
+      login: async (email: string, password: string) => {
+        try {
+          const res = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+          if (!res.ok) return false;
+          const user = await res.json();
+
+          // Set currentUser FIRST so fetchData() auth guard passes
+          const loggedInUser = { ...user, lastLogin: new Date().toISOString() };
+          set({ currentUser: loggedInUser });
+
+          // Fetch org-scoped data from server
+          await get().fetchData();
+
+          // Log lastLogin async (non-blocking)
+          fetch("/api/users", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: user.id, lastLogin: loggedInUser.lastLogin }),
+          }).catch(() => {});
+
+          return true;
+        } catch (err) {
+          console.error("Login error:", err);
+          return false;
+        }
+      },
+
+      logout: () => set({
+        currentUser: null,
+        currentStoreId: null,
+        subscription: null,
+        organization: null,
+        cart: [],
+        activePage: "dashboard",
+        stores: [],
+        users: [],
+        categories: [],
+        products: [],
+        customers: [],
+        sales: [],
+        inventoryLogs: [],
+        suppliers: [],
+        purchaseOrders: [],
+        heldSales: [],
+      }),
+
       setCurrentStore: (storeId) => set({ currentStoreId: storeId }),
 
       // ── Stores ──
