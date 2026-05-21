@@ -211,6 +211,13 @@ interface POSState {
   addPurchaseOrder: (order: Omit<PurchaseOrder, "id" | "createdAt">) => void;
   receivePurchaseOrder: (id: string) => void;
 
+  // Loading / error state
+  isLoading: boolean;
+  dataError: string | null;
+
+  // Actions — Data
+  fetchData: () => Promise<void>;
+
   // Actions — UI
   setActivePage: (page: string) => void;
   toggleSidebar: () => void;
@@ -326,6 +333,15 @@ export const usePOSStore = create<POSState>()(
       cartDiscount: 0,
       activePage: "dashboard",
       sidebarOpen: true,
+      isLoading: false,
+      dataError: null,
+
+      // ── Data ──
+      fetchData: async () => {
+        // Data is seeded locally — nothing to fetch from an API.
+        // This exists so App.tsx can call it without errors.
+        set({ isLoading: false, dataError: null });
+      },
 
       // ── Auth ──
       login: (email, _password) => {
