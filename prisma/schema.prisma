@@ -227,3 +227,32 @@ model HeldSaleItem {
   heldSale    HeldSale @relation(fields: [heldSaleId], references: [id], onDelete: Cascade)
   productId   String
 }
+
+model AuditLog {
+  id             String       @id @default(uuid())
+  // Actor
+  actorId        String?      // userId who performed the action (null for system)
+  actorName      String?      // Name at time of action (denormalized)
+  actorRole      String?      // Role at time of action
+  actorEmail     String?      // Email at time of action
+  // Action
+  action         String       // e.g. "USER_LOGIN", "PRODUCT_CREATED", "SALE_COMPLETED"
+  resourceType   String?      // e.g. "User", "Product", "Sale"
+  resourceId     String?      // ID of the affected resource
+  resourceLabel  String?      // Human-readable name of the resource
+  // Context
+  organizationId String       // Always scoped to an org
+  storeId        String?      // Optional store context
+  storeName      String?      // Denormalized store name
+  // Payload
+  metadata       Json?        // Diff / extra details
+  ipAddress      String?
+  userAgent      String?
+  // Timestamp
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([actorId])
+  @@index([action])
+  @@index([resourceType, resourceId])
+}

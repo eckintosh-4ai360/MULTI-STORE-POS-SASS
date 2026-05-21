@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "../../../../utils/prismaClient";
 import bcrypt from "bcryptjs";
 
+import { writeAuditLog } from "../../../../utils/auditLogger";
+
 function slugify(str: string): string {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50);
 }
@@ -83,6 +85,26 @@ export async function POST(req: Request) {
       });
 
       return { user, store, org };
+    });
+
+    // Write audit log for new registration
+    writeAuditLog({
+      action: "USER_REGISTERED",
+      resourceType: "Organization",
+      resourceId: result.org.id,
+      resourceLabel: result.org.name,
+      metadata: { plan: selectedPlan, storeName: result.store.name },
+      context: {
+        actorId: result.user.id,
+        actorName: result.user.name,
+        actorRole: result.user.role,
+        actorEmail: result.user.email,
+        organizationId: result.org.id,
+        storeId: result.store.id,
+        storeName: result.store.name,
+        ipAddress: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown",
+        userAgent: req.headers.get("user-agent") ?? undefined,
+      },
     });
 
     return NextResponse.json({

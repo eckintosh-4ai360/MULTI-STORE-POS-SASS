@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../utils/prismaClient";
 import { requireAuth, isNextResponse } from "../../../utils/apiAuth";
+import { writeAuditLog, buildAuditContext } from "../../../utils/auditLogger";
 
 export async function POST(req: Request) {
   try {
@@ -88,6 +89,26 @@ export async function POST(req: Request) {
 
       return createdSale;
     });
+
+    // Write audit log
+    const actor = await prisma.user.findUnique({
+      where: { id: auth.userId },
+      select: { id: true, name: true, role: true, email: true, organizationId: true },
+    });
+    if (actor?.organizationId) {
+      const store = await prisma.store.findUnique({
+        where: { id: storeId },
+        select: { name: true },
+      });
+      writeAuditLog({
+        action: "SALE_COMPLETED",
+        resourceType: "Sale",
+        resourceId: result.id,
+        resourceLabel: invoiceNo,
+        metadata: { total: result.total, paymentMethod: result.paymentMethod, itemsCount: items.length },
+        context: buildAuditContext(req, actor, { storeId, storeName: store?.name }),
+      });
+    }
 
     return NextResponse.json(result);
   } catch (error: any) {

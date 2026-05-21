@@ -15,6 +15,7 @@ import { UsersPage } from "./views/UsersPage";
 import { SuppliersPage } from "./views/SuppliersPage";
 import { InventoryPage } from "./views/InventoryPage";
 import { SettingsPage } from "./views/SettingsPage";
+import { AuditLogsPage } from "./views/AuditLogsPage";
 import { cn } from "./utils/cn";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { usePageTitle } from "./utils/usePageTitle";
@@ -33,6 +34,7 @@ const pages: Record<string, React.ReactNode> = {
   stores: <StoresPage />,
   settings: <SettingsPage />,
   purchases: <SettingsPage />,
+  audit_logs: <AuditLogsPage />,
 };
 
 function LoadingSkeleton() {

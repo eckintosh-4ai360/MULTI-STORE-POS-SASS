@@ -43,14 +43,15 @@ const navGroups = [
     label: "Admin",
     items: [
       { id: "stores", label: "Stores", icon: StoreIcon },
+      { id: "audit_logs", label: "Audit Logs", icon: ClipboardList },
       { id: "settings", label: "Settings", icon: Settings },
     ],
   },
 ];
 
 const roleAccess: Record<string, string[]> = {
-  super_admin: ["dashboard", "pos", "products", "categories", "inventory", "customers", "suppliers", "users", "sales", "purchases", "reports", "stores", "settings"],
-  store_admin: ["dashboard", "pos", "products", "categories", "inventory", "customers", "suppliers", "users", "sales", "purchases", "reports", "settings"],
+  super_admin: ["dashboard", "pos", "products", "categories", "inventory", "customers", "suppliers", "users", "sales", "purchases", "reports", "stores", "audit_logs", "settings"],
+  store_admin: ["dashboard", "pos", "products", "categories", "inventory", "customers", "suppliers", "users", "sales", "purchases", "reports", "audit_logs", "settings"],
   manager: ["dashboard", "pos", "products", "categories", "inventory", "customers", "suppliers", "sales", "purchases", "reports"],
   cashier: ["dashboard", "pos", "customers", "sales"],
 };
