@@ -8,7 +8,7 @@ import { Input, Select } from "../components/ui/Input";
 import { Modal } from "../components/ui/Modal";
 import { cn } from "../utils/cn";
 
-const emptyProduct = { name: "", barcode: "", price: 0, costPrice: 0, stock: 0, categoryId: "", storeId: "", lowStockThreshold: 10, expiryDate: "" };
+const emptyProduct = { name: "", barcode: "", price: 0, costPrice: 0, stock: 0, categoryId: "", storeId: "", lowStockThreshold: 10, expiryDate: "", image: "" };
 
 export const ProductsPage: React.FC = () => {
   const { products, categories, addProduct, updateProduct, deleteProduct, adjustStock, currentStoreId, stores, currentUser } = usePOSStore();
@@ -20,6 +20,7 @@ export const ProductsPage: React.FC = () => {
   const [form, setForm] = useState({ ...emptyProduct });
   const [stockForm, setStockForm] = useState({ qty: 1, type: "IN" as StockMoveType, note: "" });
   const [filterStatus, setFilterStatus] = useState("all");
+  const [uploading, setUploading] = useState(false);
 
   const isSuperAdmin = currentUser?.role === "super_admin";
   const canEdit = ["super_admin", "store_admin", "manager"].includes(currentUser?.role ?? "");
@@ -36,6 +37,30 @@ export const ProductsPage: React.FC = () => {
     return prods;
   }, [products, search, storeId, isSuperAdmin, filterStatus]);
 
+  const handleProductImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setForm(f => ({ ...f, image: data.url }));
+      }
+    } catch (err) {
+      console.error("Product image upload failed:", err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const openAdd = () => {
     setEditProduct(null);
     setForm({ ...emptyProduct, storeId: storeId, categoryId: storeCategories[0]?.id ?? "" });
@@ -44,7 +69,7 @@ export const ProductsPage: React.FC = () => {
 
   const openEdit = (p: Product) => {
     setEditProduct(p);
-    setForm({ name: p.name, barcode: p.barcode, price: p.price, costPrice: p.costPrice, stock: p.stock, categoryId: p.categoryId, storeId: p.storeId, lowStockThreshold: p.lowStockThreshold, expiryDate: p.expiryDate ?? "" });
+    setForm({ name: p.name, barcode: p.barcode, price: p.price, costPrice: p.costPrice, stock: p.stock, categoryId: p.categoryId, storeId: p.storeId, lowStockThreshold: p.lowStockThreshold, expiryDate: p.expiryDate ?? "", image: p.image ?? "" });
     setShowModal(true);
   };
 
@@ -135,8 +160,19 @@ export const ProductsPage: React.FC = () => {
               {storeProducts.map(p => (
                 <tr key={p.id} className="hover:bg-gray-50/50 transition">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-gray-800">{p.name}</p>
-                    {p.expiryDate && <p className="text-[10px] text-orange-500">Expires: {p.expiryDate}</p>}
+                    <div className="flex items-center gap-3">
+                      {p.image ? (
+                        <img src={p.image} alt={p.name} className="w-10 h-10 rounded-xl border border-gray-100 object-cover flex-shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 font-bold flex-shrink-0 text-xs">
+                          {p.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-medium text-gray-800">{p.name}</p>
+                        {p.expiryDate && <p className="text-[10px] text-orange-500">Expires: {p.expiryDate}</p>}
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-gray-400 font-mono text-xs">{p.barcode}</td>
                   <td className="px-4 py-3"><Badge variant="neutral">{categoryName(p.categoryId)}</Badge></td>
@@ -212,6 +248,35 @@ export const ProductsPage: React.FC = () => {
             />
           )}
           <Input label="Expiry Date (optional)" type="date" value={form.expiryDate} onChange={e => setForm(f => ({ ...f, expiryDate: e.target.value }))} />
+          <div>
+            <label className="text-xs font-semibold text-gray-600 block mb-1">Product Image</label>
+            <div className="flex items-center gap-3">
+              {form.image ? (
+                <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-gray-200 flex-shrink-0">
+                  <img src={form.image} alt="Product Preview" className="w-full h-full object-cover" />
+                  <button 
+                    type="button" 
+                    onClick={() => setForm(f => ({ ...f, image: "" }))}
+                    className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 hover:opacity-100 transition text-[9px] font-bold"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div className="w-12 h-12 rounded-xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-400 text-xs flex-shrink-0">
+                  None
+                </div>
+              )}
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={handleProductImageUpload} 
+                disabled={uploading}
+                className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 file:cursor-pointer"
+              />
+              {uploading && <span className="text-[10px] text-gray-400">Uploading...</span>}
+            </div>
+          </div>
         </div>
       </Modal>
 

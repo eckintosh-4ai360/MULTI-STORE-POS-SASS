@@ -171,7 +171,7 @@ export const UsersPage: React.FC = () => {
             />
           )}
           <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
-            <p className="text-xs text-blue-600"><Shield size={12} className="inline mr-1" />Default password is "password". Users should change it upon first login.</p>
+            <p className="text-xs text-blue-600"><Shield size={12} className="inline mr-1" />Default password is "password123". Users should change it upon first login.</p>
           </div>
         </div>
       </Modal>

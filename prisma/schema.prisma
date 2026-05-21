@@ -1,0 +1,198 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Store {
+  id             String         @id @default(uuid())
+  name           String
+  location       String
+  currency       String
+  taxRate        Float
+  status         String         // "active" | "inactive"
+  logo           String?        // Cloudinary URL
+  receiptHeader  String?
+  receiptFooter  String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  
+  users          User[]
+  categories     Category[]
+  products       Product[]
+  customers      Customer[]
+  sales          Sale[]
+  inventoryLogs  InventoryLog[]
+  suppliers      Supplier[]
+  purchaseOrders PurchaseOrder[]
+}
+
+model User {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  passwordHash String    @default("$2b$10$C9DZwr2egICIq9f65cgMs./TmVc.g9WnZmep7/un/vH7xE8Ga5hSi")
+  role         String    // "super_admin" | "store_admin" | "manager" | "cashier"
+  status       String    // "active" | "inactive"
+  createdAt    DateTime  @default(now())
+  lastLogin    DateTime?
+  
+  storeId   String?
+  store     Store?    @relation(fields: [storeId], references: [id])
+  sales     Sale[]
+}
+
+model Category {
+  id      String    @id @default(uuid())
+  name    String
+  storeId String
+  store   Store     @relation(fields: [storeId], references: [id])
+  products Product[]
+  
+  @@unique([name, storeId])
+}
+
+model Product {
+  id                String         @id @default(uuid())
+  name              String
+  barcode           String
+  price             Float
+  costPrice         Float
+  stock             Int
+  lowStockThreshold Int            @default(10)
+  expiryDate        String?        // YYYY-MM-DD
+  image             String?        // Cloudinary URL
+  createdAt         DateTime       @default(now())
+  
+  categoryId        String
+  category          Category       @relation(fields: [categoryId], references: [id])
+  storeId           String
+  store             Store          @relation(fields: [storeId], references: [id])
+  inventoryLogs     InventoryLog[]
+}
+
+model Customer {
+  id            String   @id @default(uuid())
+  name          String
+  phone         String
+  email         String?
+  creditBalance Float    @default(0.0)
+  createdAt     DateTime @default(now())
+  
+  storeId       String
+  store         Store    @relation(fields: [storeId], references: [id])
+  sales         Sale[]
+}
+
+model Sale {
+  id             String     @id @default(uuid())
+  invoiceNo      String     @unique
+  subtotal       Float
+  taxAmount      Float
+  discountAmount Float
+  total          Float
+  paymentMethod  String     // "cash" | "mobile_money" | "card"
+  amountPaid     Float
+  change         Float
+  status         String     // "completed" | "held" | "refunded"
+  customerName   String?
+  createdAt      DateTime   @default(now())
+  
+  storeId        String
+  store          Store      @relation(fields: [storeId], references: [id])
+  userId         String
+  user           User       @relation(fields: [userId], references: [id])
+  customerId     String?
+  customer       Customer?  @relation(fields: [customerId], references: [id])
+  items          SaleItem[]
+}
+
+model SaleItem {
+  id          String  @id @default(uuid())
+  productName String
+  qty         Int
+  price       Float
+  discount    Float
+  
+  saleId      String
+  sale        Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId   String
+}
+
+model InventoryLog {
+  id          String   @id @default(uuid())
+  productName String
+  type        String   // "IN" | "OUT" | "TRANSFER" | "SALE"
+  qty         Int
+  note        String?
+  createdAt   DateTime @default(now())
+  
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id])
+}
+
+model Supplier {
+  id             String          @id @default(uuid())
+  name           String
+  phone          String
+  email          String?
+  address        String?
+  balance        Float           @default(0.0)
+  createdAt      DateTime        @default(now())
+  
+  storeId        String?
+  store          Store?          @relation(fields: [storeId], references: [id])
+  purchaseOrders PurchaseOrder[]
+}
+
+model PurchaseOrder {
+  id           String              @id @default(uuid())
+  supplierName String
+  total        Float
+  status       String              // "pending" | "received" | "cancelled"
+  createdAt    DateTime            @default(now())
+  
+  supplierId   String
+  supplier     Supplier            @relation(fields: [supplierId], references: [id])
+  storeId      String
+  store        Store               @relation(fields: [storeId], references: [id])
+  items        PurchaseOrderItem[]
+}
+
+model PurchaseOrderItem {
+  id              String        @id @default(uuid())
+  productName     String
+  qty             Int
+  cost            Float
+  
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  productId       String
+}
+
+model HeldSale {
+  id         String         @id @default(uuid())
+  customerId String?
+  note       String?
+  heldAt     DateTime       @default(now())
+  items      HeldSaleItem[]
+}
+
+model HeldSaleItem {
+  id          String   @id @default(uuid())
+  productName String
+  price       Float
+  qty         Int
+  discount    Float
+  stock       Int
+  
+  heldSaleId  String
+  heldSale    HeldSale @relation(fields: [heldSaleId], references: [id], onDelete: Cascade)
+  productId   String
+}

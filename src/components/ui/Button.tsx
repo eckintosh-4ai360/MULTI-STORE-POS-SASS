@@ -9,19 +9,19 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants = {
-  primary: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm",
-  secondary: "bg-gray-100 hover:bg-gray-200 text-gray-700",
-  danger: "bg-red-500 hover:bg-red-600 text-white shadow-sm",
-  ghost: "hover:bg-gray-100 text-gray-600",
-  success: "bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm",
-  warning: "bg-amber-500 hover:bg-amber-600 text-white shadow-sm",
+  primary: "glass-button-primary text-white",
+  secondary: "bg-gray-100/90 hover:bg-gray-200/90 text-gray-700 border border-gray-200/80",
+  danger: "bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white shadow-md shadow-red-500/25 border border-red-400/20",
+  ghost: "hover:bg-gray-100/80 text-gray-600 border border-transparent hover:border-gray-200/60",
+  success: "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-md shadow-emerald-500/25 border border-emerald-400/20",
+  warning: "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-md shadow-amber-500/25 border border-amber-400/20",
 };
 
 const sizes = {
-  xs: "px-2 py-1 text-xs rounded-lg",
-  sm: "px-3 py-1.5 text-sm rounded-lg",
-  md: "px-4 py-2 text-sm rounded-xl",
-  lg: "px-6 py-3 text-base rounded-xl",
+  xs: "px-2.5 py-1 text-xs rounded-lg gap-1",
+  sm: "px-3 py-1.5 text-sm rounded-xl gap-1.5",
+  md: "px-4 py-2 text-sm rounded-xl gap-2",
+  lg: "px-6 py-3 text-base rounded-2xl gap-2",
 };
 
 export const Button: React.FC<ButtonProps> = ({
@@ -30,7 +30,7 @@ export const Button: React.FC<ButtonProps> = ({
   <button
     disabled={disabled || loading}
     className={cn(
-      "inline-flex items-center gap-2 font-medium transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed",
+      "inline-flex items-center justify-center font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap",
       variants[variant], sizes[size], className
     )}
     {...props}

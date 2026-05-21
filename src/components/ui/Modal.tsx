@@ -21,24 +21,49 @@ const sizes = {
 export const Modal: React.FC<ModalProps> = ({ open, onClose, title, children, size = "md", footer }) => {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    if (open) document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
+    if (open) {
+      document.addEventListener("keydown", handler);
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.removeEventListener("keydown", handler);
+      document.body.style.overflow = "";
+    };
   }, [open, onClose]);
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className={cn("relative bg-white rounded-2xl shadow-2xl w-full flex flex-col max-h-[90vh]", sizes[size])}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-md"
+        onClick={onClose}
+      />
+      {/* Panel */}
+      <div className={cn(
+        "relative glass-modal rounded-t-3xl sm:rounded-2xl w-full flex flex-col animate-scaleIn",
+        "max-h-[95vh] sm:max-h-[90vh]",
+        sizes[size]
+      )}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 md:px-6 py-4 border-b border-black/8">
+          <h3 className="text-base md:text-lg font-bold text-gray-800">{title}</h3>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl hover:bg-gray-100/80 text-gray-400 hover:text-gray-600 transition"
+          >
             <X size={18} />
           </button>
         </div>
-        <div className="overflow-y-auto flex-1 px-6 py-4">{children}</div>
-        {footer && <div className="px-6 py-4 border-t border-gray-100 flex gap-3 justify-end">{footer}</div>}
+        {/* Body */}
+        <div className="overflow-y-auto flex-1 px-5 md:px-6 py-4">{children}</div>
+        {/* Footer */}
+        {footer && (
+          <div className="px-5 md:px-6 py-4 border-t border-black/8 flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 sm:justify-end">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

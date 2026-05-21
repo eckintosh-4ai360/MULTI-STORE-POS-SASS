@@ -13,32 +13,33 @@ interface StatCardProps {
 }
 
 const colors = {
-  indigo: { bg: "bg-indigo-50", icon: "bg-indigo-100 text-indigo-600", text: "text-indigo-600" },
-  emerald: { bg: "bg-emerald-50", icon: "bg-emerald-100 text-emerald-600", text: "text-emerald-600" },
-  amber: { bg: "bg-amber-50", icon: "bg-amber-100 text-amber-600", text: "text-amber-600" },
-  rose: { bg: "bg-rose-50", icon: "bg-rose-100 text-rose-600", text: "text-rose-600" },
-  purple: { bg: "bg-purple-50", icon: "bg-purple-100 text-purple-600", text: "text-purple-600" },
-  cyan: { bg: "bg-cyan-50", icon: "bg-cyan-100 text-cyan-600", text: "text-cyan-600" },
+  indigo: { icon: "bg-indigo-500 text-white shadow-md shadow-indigo-500/20" },
+  emerald: { icon: "bg-emerald-500 text-white shadow-md shadow-emerald-500/20" },
+  amber: { icon: "bg-amber-500 text-white shadow-md shadow-amber-500/20" },
+  rose: { icon: "bg-rose-500 text-white shadow-md shadow-rose-500/20" },
+  purple: { icon: "bg-purple-500 text-white shadow-md shadow-purple-500/20" },
+  cyan: { icon: "bg-cyan-500 text-white shadow-md shadow-cyan-500/20" },
 };
 
 export const StatCard: React.FC<StatCardProps> = ({ title, value, subtitle, icon, trend, color = "indigo", className }) => {
   const c = colors[color];
   return (
-    <div className={cn("bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-start gap-4", className)}>
-      <div className={cn("p-3 rounded-xl flex-shrink-0", c.icon)}>{icon}</div>
+    <div className={cn("glass-stat-card rounded-2xl p-5 flex items-start gap-4 border border-white/60", className)}>
+      <div className={cn("w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0", c.icon)}>{icon}</div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{title}</p>
-        <p className="text-2xl font-bold text-gray-800 mt-0.5">{value}</p>
-        <div className="flex items-center gap-2 mt-1">
+        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{title}</p>
+        <p className="text-3xl font-extrabold text-slate-900 mt-1 tracking-tight">{value}</p>
+        <div className="flex items-center gap-2 mt-1.5">
           {trend !== undefined && (
-            <span className={cn("flex items-center gap-0.5 text-xs font-medium", trend >= 0 ? "text-emerald-600" : "text-red-500")}>
-              {trend >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+            <span className={cn("flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full", trend >= 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600")}>
+              {trend >= 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
               {Math.abs(trend)}%
             </span>
           )}
-          {subtitle && <span className="text-xs text-gray-400">{subtitle}</span>}
+          {subtitle && <span className="text-xs font-medium text-slate-400">{subtitle}</span>}
         </div>
       </div>
     </div>
   );
 };
+
