@@ -47,6 +47,7 @@ export interface Product {
   storeId: string;
   expiryDate?: string;
   lowStockThreshold: number;
+  image?: string;
 }
 
 export interface Customer {
@@ -136,10 +137,15 @@ export interface HeldSale {
 }
 // ─── App State
 
-interface POSState {
+export interface POSState {
   // Auth
   currentUser: User | null;
   currentStoreId: string | null;
+  subscription: { plan: string; status: string; trialEnd?: string | null; currentPeriodEnd?: string | null; paystackCustomerCode?: string | null } | null;
+  setSubscription: (sub: POSState["subscription"]) => void;
+
+  // Organization
+  organization: { id: string; name: string; slug: string; ownerEmail: string } | null;
 
   // Data
   stores: Store[];
@@ -163,7 +169,7 @@ interface POSState {
   sidebarOpen: boolean;
 
   // Actions — Auth
-  login: (email: string, password: string) => boolean;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   setCurrentStore: (storeId: string) => void;
 
@@ -214,9 +220,6 @@ interface POSState {
   // Loading / error state
   isLoading: boolean;
   dataError: string | null;
-
-  // Organization
-  organization: { id: string; name: string; slug: string; ownerEmail: string } | null;
 
   // Actions — Data
   fetchData: () => Promise<void>;
@@ -340,6 +343,8 @@ export const usePOSStore = create<POSState>()(
       isLoading: false,
       dataError: null,
       organization: null,
+      subscription: null,
+      setSubscription: (sub) => set({ subscription: sub }),
 
       // ── Data ──
       fetchData: async () => {
@@ -392,14 +397,10 @@ export const usePOSStore = create<POSState>()(
         }
       },
 
-      // ── Auth ──
-      login: (email, _password) => {
-        const user = get().users.find(u => u.email === email && u.status === "active");
-        if (!user) return false;
-        const storeId = user.storeId ?? get().stores.find(s => s.status === "active")?.id ?? null;
-        set({ currentUser: { ...user, lastLogin: new Date().toISOString() }, currentStoreId: storeId });
-        return true;
-      },
+      // ── Auth (implemented by authSlice) ──
+      // login, logout, setCurrentStore, setSubscription are provided by authSlice
+      // These stubs satisfy the type — authSlice overrides them via compose/merge
+      login: async (_email: string, _password: string) => false,
       logout: () => set({ currentUser: null, currentStoreId: null, cart: [], activePage: "dashboard" }),
       setCurrentStore: (storeId) => set({ currentStoreId: storeId }),
 
