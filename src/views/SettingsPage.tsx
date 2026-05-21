@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { usePOSStore } from "../store/posStore";
 import { Store, Bell, Shield, Palette, Database, CheckCircle, CreditCard, Zap, TrendingUp } from "lucide-react";
 import { Input, Select } from "../components/ui/Input";
@@ -17,7 +17,7 @@ export const SettingsPage: React.FC = () => {
   const [form, setForm] = useState({
     name: store?.name ?? "",
     location: store?.location ?? "",
-    currency: store?.currency ?? "GHS",
+    currency: store?.currency ?? "GH₵",
     taxRate: store?.taxRate ?? 15,
     receiptHeader: store?.receiptHeader ?? "",
     receiptFooter: store?.receiptFooter ?? "",
@@ -78,7 +78,7 @@ export const SettingsPage: React.FC = () => {
                   value={form.currency}
                   onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}
                   options={[
-                    { value: "GHS", label: "GHS — Ghanaian Cedi" },
+                    { value: "GH₵", label: "GHS — Ghanaian Cedi" },
                     { value: "USD", label: "USD — US Dollar" },
                     { value: "EUR", label: "EUR — Euro" },
                     { value: "NGN", label: "NGN — Nigerian Naira" },
@@ -319,7 +319,7 @@ export const SettingsPage: React.FC = () => {
                     return (
                       <div key={p} className={`p-4 rounded-2xl border-2 ${isCurrent ? "border-indigo-400 bg-indigo-50/50" : "border-slate-100"}`}>
                         <p className="font-bold text-slate-800 text-sm capitalize mb-1">{getPlanLabel(p)}</p>
-                        <p className="text-2xl font-black text-slate-900">GHS {prices[p]}<span className="text-xs text-slate-400 font-normal">/mo</span></p>
+                        <p className="text-2xl font-black text-slate-900">GH₵ {prices[p]}<span className="text-xs text-slate-400 font-normal">/mo</span></p>
                         <ul className="mt-3 space-y-1 text-xs text-slate-500">
                           <li>{lim.stores === Infinity ? "Unlimited" : lim.stores} store{lim.stores !== 1 ? "s" : ""}</li>
                           <li>{lim.users === Infinity ? "Unlimited" : lim.users} users</li>

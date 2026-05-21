@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+﻿import React, { useState, useMemo } from "react";
 import { usePOSStore, Customer } from "../store/posStore";
 import { Plus, Search, Edit2, Users, Phone, Mail, AlertCircle } from "lucide-react";
 import { Button } from "../components/ui/Button";
@@ -69,7 +69,7 @@ export const CustomersPage: React.FC = () => {
         {[
           { label: "Total Customers", value: storeCustomers.length, color: "text-indigo-600" },
           { label: "With Credit", value: storeCustomers.filter(c => c.creditBalance > 0).length, color: "text-amber-600" },
-          { label: "Total Credit Owed", value: `GHS ${storeCustomers.reduce((s, c) => s + c.creditBalance, 0).toFixed(2)}`, color: "text-red-600" },
+          { label: "Total Credit Owed", value: `GH₵ ${storeCustomers.reduce((s, c) => s + c.creditBalance, 0).toFixed(2)}`, color: "text-red-600" },
         ].map(stat => (
           <div key={stat.label} className="glass-card rounded-2xl border border-white/60 p-4">
             <p className="text-xs font-semibold text-slate-500/80 uppercase tracking-widest">{stat.label}</p>
@@ -98,14 +98,14 @@ export const CustomersPage: React.FC = () => {
                 <p className="text-[10px] font-semibold text-slate-500/80 uppercase tracking-wider">Total Sales</p>
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-800">GHS {getCustomerTotal(c.id).toFixed(0)}</p>
+                <p className="text-sm font-bold text-slate-800">GH₵ {getCustomerTotal(c.id).toFixed(0)}</p>
                 <p className="text-[10px] font-semibold text-slate-500/80 uppercase tracking-wider">Total Spent</p>
               </div>
             </div>
             {c.creditBalance > 0 && (
               <div className="mt-2 flex items-center gap-1.5 p-2 bg-amber-500/10 rounded-xl border border-amber-500/20">
                 <AlertCircle size={12} className="text-amber-600" />
-                <span className="text-xs font-semibold text-amber-700">Credit: GHS {c.creditBalance.toFixed(2)}</span>
+                <span className="text-xs font-semibold text-amber-700">Credit: GH₵ {c.creditBalance.toFixed(2)}</span>
               </div>
             )}
             <p className="text-[10px] text-slate-400 mt-2 font-medium">Member since {format(new Date(c.createdAt), "MMM yyyy")}</p>
@@ -130,7 +130,7 @@ export const CustomersPage: React.FC = () => {
           <Input label="Full Name *" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Customer name" />
           <Input label="Phone Number *" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="e.g. 0244-123456" />
           <Input label="Email (optional)" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="customer@email.com" />
-          {editCustomer && <Input label="Credit Balance (GHS)" type="number" value={form.creditBalance || ""} onChange={e => setForm(f => ({ ...f, creditBalance: parseFloat(e.target.value) || 0 }))} />}
+          {editCustomer && <Input label="Credit Balance (GH₵)" type="number" value={form.creditBalance || ""} onChange={e => setForm(f => ({ ...f, creditBalance: parseFloat(e.target.value) || 0 }))} />}
         </div>
       </Modal>
     </div>

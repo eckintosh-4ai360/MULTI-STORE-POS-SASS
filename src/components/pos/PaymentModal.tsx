@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { PaymentMethod } from "../../store/posStore";
 import { CreditCard, Smartphone, Banknote, CheckCircle, X } from "lucide-react";
 import { Button } from "../ui/Button";
@@ -43,7 +43,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, onConfirm, on
             </button>
           </div>
           <p className="text-3xl font-extrabold text-indigo-600 tracking-tight">
-            GHS {total.toFixed(2)}
+            GH₵ {total.toFixed(2)}
           </p>
         </div>
 
@@ -77,14 +77,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ total, onConfirm, on
                 type="number"
                 value={amountPaid}
                 onChange={(e) => setAmountPaid(e.target.value)}
-                placeholder={`GHS ${total.toFixed(2)}`}
+                placeholder={`GH₵ ${total.toFixed(2)}`}
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-lg font-bold text-center focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition"
                 autoFocus
               />
               {paid >= total && (
                 <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-center animate-fadeIn">
                   <span className="text-emerald-700 font-bold text-sm">
-                    Change: GHS {change.toFixed(2)}
+                    Change: GH₵ {change.toFixed(2)}
                   </span>
                 </div>
               )}

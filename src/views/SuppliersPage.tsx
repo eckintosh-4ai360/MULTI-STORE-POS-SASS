@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { usePOSStore, Supplier } from "../store/posStore";
 import { Plus, Edit2, Truck, Phone, Mail, CheckCircle, X } from "lucide-react";
 import { Button } from "../components/ui/Button";
@@ -77,7 +77,7 @@ export const SuppliersPage: React.FC = () => {
               </div>
               {sup.balance > 0 && (
                 <div className="mt-3 p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
-                  <p className="text-xs text-red-600 font-medium">Outstanding: GHS {sup.balance.toFixed(2)}</p>
+                  <p className="text-xs text-red-600 font-medium">Outstanding: GH₵ {sup.balance.toFixed(2)}</p>
                 </div>
               )}
               <div className="mt-3 text-xs text-gray-400">
@@ -109,7 +109,7 @@ export const SuppliersPage: React.FC = () => {
                   <td className="px-4 py-3 font-mono text-xs text-indigo-600">{order.id.slice(-8).toUpperCase()}</td>
                   <td className="px-4 py-3 font-medium text-slate-800">{order.supplierName}</td>
                   <td className="px-4 py-3 text-slate-600">{order.items.length} item(s)</td>
-                  <td className="px-4 py-3 font-semibold text-slate-800">GHS {order.total.toFixed(2)}</td>
+                  <td className="px-4 py-3 font-semibold text-slate-800">GH₵ {order.total.toFixed(2)}</td>
                   <td className="px-4 py-3 text-xs text-slate-500">{format(new Date(order.createdAt), "dd MMM yyyy")}</td>
                   <td className="px-4 py-3"><Badge variant={order.status === "received" ? "success" : order.status === "cancelled" ? "danger" : "warning"}>{order.status}</Badge></td>
                   <td className="px-4 py-3">

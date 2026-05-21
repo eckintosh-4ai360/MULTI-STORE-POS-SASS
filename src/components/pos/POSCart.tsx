@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { usePOSStore } from "../../store/posStore";
 import { ShoppingCart, Minus, Plus, X, Tag, CreditCard, PauseCircle, Users } from "lucide-react";
 import { Badge } from "../ui/Badge";
@@ -114,7 +114,7 @@ export const POSCart: React.FC<POSCartProps> = ({
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-bold text-gray-800">
-                    GHS {(item.price * item.qty * (1 - item.discount / 100)).toFixed(2)}
+                    GH₵ {(item.price * item.qty * (1 - item.discount / 100)).toFixed(2)}
                   </p>
                   <div className="flex items-center gap-1 mt-0.5 justify-end">
                     <Tag size={9} className="text-gray-300" />
@@ -156,21 +156,21 @@ export const POSCart: React.FC<POSCartProps> = ({
           </div>
           <div className="flex justify-between text-xs text-gray-500">
             <span>Subtotal</span>
-            <span>GHS {subtotal.toFixed(2)}</span>
+            <span>GH₵ {subtotal.toFixed(2)}</span>
           </div>
           {discountAmount > 0 && (
             <div className="flex justify-between text-xs text-red-500">
               <span>Discount</span>
-              <span>-GHS {discountAmount.toFixed(2)}</span>
+              <span>-GH₵ {discountAmount.toFixed(2)}</span>
             </div>
           )}
           <div className="flex justify-between text-xs text-gray-500">
             <span>Tax ({taxRate}%)</span>
-            <span>GHS {taxAmount.toFixed(2)}</span>
+            <span>GH₵ {taxAmount.toFixed(2)}</span>
           </div>
           <div className="flex justify-between font-bold text-gray-800 text-sm pt-1.5 border-t border-white/30">
             <span>Total</span>
-            <span>GHS {total.toFixed(2)}</span>
+            <span>GH₵ {total.toFixed(2)}</span>
           </div>
         </div>
       )}
@@ -189,7 +189,7 @@ export const POSCart: React.FC<POSCartProps> = ({
               onClick={onCheckout}
               className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white py-3 rounded-2xl font-bold text-sm transition shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 active:scale-[0.98]"
             >
-              <CreditCard size={18} /> Charge GHS {total.toFixed(2)}
+              <CreditCard size={18} /> Charge GH₵ {total.toFixed(2)}
             </button>
           </>
         )}

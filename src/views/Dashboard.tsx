@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+﻿import React, { useMemo } from "react";
 import { usePOSStore } from "../store/posStore";
 import { StatCard } from "../components/ui/StatCard";
 import { Card, CardHeader, CardBody } from "../components/ui/Card";
@@ -103,7 +103,7 @@ export const Dashboard: React.FC = () => {
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Today's Revenue" value={`GHS ${todayRevenue.toFixed(2)}`} icon={<DollarSign size={20} />} color="indigo" trend={revenueTrend} subtitle="vs yesterday" />
+        <StatCard title="Today's Revenue" value={`GH₵ ${todayRevenue.toFixed(2)}`} icon={<DollarSign size={20} />} color="indigo" trend={revenueTrend} subtitle="vs yesterday" />
         <StatCard title="Today's Sales" value={String(todaySales.length)} icon={<ShoppingBag size={20} />} color="emerald" trend={salesTorend} subtitle="vs yesterday" />
         <StatCard title="Low Stock Alerts" value={String(lowStockItems.length)} icon={<AlertTriangle size={20} />} color="amber" subtitle="items need restock" />
         <StatCard title={isSuperAdmin ? "Total Customers" : "Store Customers"} value={String(filteredCustomers.length)} icon={<Users size={20} />} color="purple" trend={5} subtitle="registered" />
@@ -116,7 +116,7 @@ export const Dashboard: React.FC = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-gray-800">Revenue (Last 7 Days)</h3>
-              <span className="text-sm text-gray-500">GHS {totalRevenue.toFixed(2)} total</span>
+              <span className="text-sm text-gray-500">GH₵ {totalRevenue.toFixed(2)} total</span>
             </div>
           </CardHeader>
           <CardBody>
@@ -131,7 +131,7 @@ export const Dashboard: React.FC = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="day" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip formatter={(val) => [`GHS ${val}`, "Revenue"]} />
+                <Tooltip formatter={(val) => [`GH₵ ${val}`, "Revenue"]} />
                 <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={2} fill="url(#colorRevenue)" />
               </AreaChart>
             </ResponsiveContainer>
@@ -149,7 +149,7 @@ export const Dashboard: React.FC = () => {
                 <Pie data={paymentData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} dataKey="value" paddingAngle={3}>
                   {paymentData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
-                <Tooltip formatter={(val) => [`GHS ${val}`, ""]} />
+                <Tooltip formatter={(val) => [`GH₵ ${val}`, ""]} />
                 <Legend iconType="circle" iconSize={8} formatter={(v) => <span className="text-xs text-gray-600">{v}</span>} />
               </PieChart>
             </ResponsiveContainer>
@@ -172,7 +172,7 @@ export const Dashboard: React.FC = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip formatter={(val) => [`GHS ${val}`, "Revenue"]} />
+                <Tooltip formatter={(val) => [`GH₵ ${val}`, "Revenue"]} />
                 <Bar dataKey="revenue" fill="#6366f1" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -199,7 +199,7 @@ export const Dashboard: React.FC = () => {
                     <p className="text-xs text-gray-400">{format(new Date(sale.createdAt), "MMM d, h:mm a")}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-semibold text-gray-800">GHS {sale.total.toFixed(2)}</p>
+                    <p className="text-sm font-semibold text-gray-800">GH₵ {sale.total.toFixed(2)}</p>
                     <Badge variant={sale.paymentMethod === "cash" ? "success" : sale.paymentMethod === "card" ? "info" : "purple"}>
                       {sale.paymentMethod.replace("_", " ")}
                     </Badge>

@@ -245,7 +245,7 @@ export default function RegisterPage() {
                             </div>
                           </div>
                           <div className="text-right flex-shrink-0">
-                            <span className="text-lg font-black text-white">${plan.price}</span>
+                            <span className="text-lg font-black text-white">GH₵ {plan.price}</span>
                             <span className="text-white/40 text-xs">/mo</span>
                           </div>
                         </div>
@@ -272,7 +272,7 @@ export default function RegisterPage() {
                     <div>
                       <label className="text-xs font-semibold text-white/70 uppercase tracking-wider block mb-1.5">Currency</label>
                       <select value={form.currency} onChange={e => upd("currency", e.target.value)} className={`${inputCls} appearance-none cursor-pointer`}>
-                        <option value="GHS" className="bg-slate-900">GHS — Ghanaian Cedi</option>
+                        <option value="GHS" className="bg-slate-900">GH₵ — Ghanaian Cedi (GHS)</option>
                         <option value="USD" className="bg-slate-900">USD — US Dollar</option>
                         <option value="EUR" className="bg-slate-900">EUR — Euro</option>
                         <option value="NGN" className="bg-slate-900">NGN — Nigerian Naira</option>

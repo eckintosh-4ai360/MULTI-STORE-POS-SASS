@@ -3,7 +3,7 @@ import { prisma } from "../../../../utils/prismaClient";
 import { requireAuth, isNextResponse } from "../../../../utils/apiAuth";
 
 // Paystack plan amounts in kobo (GHS pesewas × 100)
-// GHS 29 → 2900, GHS 79 → 7900, GHS 199 → 19900
+// GH₵ 29 → 2900, GH₵ 79 → 7900, GH₵ 199 → 19900
 const PLAN_AMOUNTS: Record<string, number> = {
   starter:    2900,
   pro:        7900,

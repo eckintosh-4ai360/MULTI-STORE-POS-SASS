@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+﻿import React, { useState, useMemo } from "react";
 import { usePagination } from "../utils/usePagination";
 import { usePOSStore, Product, StockMoveType } from "../store/posStore";
 import { Plus, Search, Edit2, Trash2, AlertTriangle, Package, ArrowUpDown, XCircle, CalendarClock } from "lucide-react";
@@ -195,8 +195,8 @@ export const ProductsPage: React.FC = () => {
                   <td className="px-4 py-3 text-slate-400 font-mono text-xs">{p.barcode}</td>
                   <td className="px-4 py-3"><Badge variant="neutral">{categoryName(p.categoryId)}</Badge></td>
                   <td className="px-4 py-3">
-                    <p className="font-semibold text-slate-800">GHS {p.price.toFixed(2)}</p>
-                    <p className="text-xs text-slate-400 font-medium">Cost: GHS {p.costPrice.toFixed(2)}</p>
+                    <p className="font-semibold text-slate-800">GH₵ {p.price.toFixed(2)}</p>
+                    <p className="text-xs text-slate-400 font-medium">Cost: GH₵ {p.costPrice.toFixed(2)}</p>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -264,8 +264,8 @@ export const ProductsPage: React.FC = () => {
           <Input label="Product Name *" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Coca-Cola 500ml" />
           <Input label="Barcode" value={form.barcode} onChange={e => setForm(f => ({ ...f, barcode: e.target.value }))} placeholder="Scan or type barcode" />
           <div className="grid grid-cols-2 gap-3">
-            <Input label="Selling Price (GHS) *" type="number" value={form.price || ""} onChange={e => setForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} />
-            <Input label="Cost Price (GHS)" type="number" value={form.costPrice || ""} onChange={e => setForm(f => ({ ...f, costPrice: parseFloat(e.target.value) || 0 }))} />
+            <Input label="Selling Price (GH₵) *" type="number" value={form.price || ""} onChange={e => setForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} />
+            <Input label="Cost Price (GH₵)" type="number" value={form.costPrice || ""} onChange={e => setForm(f => ({ ...f, costPrice: parseFloat(e.target.value) || 0 }))} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Input label="Current Stock" type="number" value={form.stock || ""} onChange={e => setForm(f => ({ ...f, stock: parseInt(e.target.value) || 0 }))} />

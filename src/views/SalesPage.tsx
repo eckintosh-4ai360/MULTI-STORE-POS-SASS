@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+﻿import React, { useState, useMemo } from "react";
 import { usePagination } from "../utils/usePagination";
 import { usePOSStore, Sale } from "../store/posStore";
 import { Search, Receipt, Eye } from "lucide-react";
@@ -94,11 +94,11 @@ export const SalesPage: React.FC = () => {
         </div>
         <div className="glass-card rounded-2xl border border-white/60 p-4 shadow-sm">
           <p className="text-xs font-semibold text-slate-500/80 uppercase tracking-widest">Total Revenue</p>
-          <p className="text-2xl font-extrabold text-emerald-600 mt-0.5">GHS {totalRevenue.toFixed(2)}</p>
+          <p className="text-2xl font-extrabold text-emerald-600 mt-0.5">GH₵ {totalRevenue.toFixed(2)}</p>
         </div>
         <div className="glass-card rounded-2xl border border-white/60 p-4 shadow-sm">
           <p className="text-xs font-semibold text-slate-500/80 uppercase tracking-widest">Avg. Sale</p>
-          <p className="text-2xl font-extrabold text-slate-700 mt-0.5">GHS {filtered.length ? (totalRevenue / filtered.length).toFixed(2) : "0.00"}</p>
+          <p className="text-2xl font-extrabold text-slate-700 mt-0.5">GH₵ {filtered.length ? (totalRevenue / filtered.length).toFixed(2) : "0.00"}</p>
         </div>
       </div>
 
@@ -128,7 +128,7 @@ export const SalesPage: React.FC = () => {
                   <td className="px-4 py-3 text-xs text-slate-600 font-medium">{userName(sale.userId)}</td>
                   <td className="px-4 py-3 text-xs text-slate-500 font-medium">{sale.customerName ?? "Walk-in"}</td>
                   <td className="px-4 py-3 text-xs text-slate-600 font-medium">{sale.items.length} item(s)</td>
-                  <td className="px-4 py-3 font-bold text-slate-800">GHS {sale.total.toFixed(2)}</td>
+                  <td className="px-4 py-3 font-bold text-slate-800">GH₵ {sale.total.toFixed(2)}</td>
                   <td className="px-4 py-3">
                     <Badge variant={sale.paymentMethod === "cash" ? "success" : sale.paymentMethod === "card" ? "info" : "purple"}>
                       {sale.paymentMethod.replace("_", " ")}
@@ -198,21 +198,21 @@ export const SalesPage: React.FC = () => {
                     <tr key={i}>
                       <td className="px-3 py-2 text-slate-800 font-medium">{item.productName}</td>
                       <td className="px-3 py-2 text-right text-slate-600 font-medium">{item.qty}</td>
-                      <td className="px-3 py-2 text-right text-slate-600 font-medium">GHS {item.price.toFixed(2)}</td>
+                      <td className="px-3 py-2 text-right text-slate-600 font-medium">GH₵ {item.price.toFixed(2)}</td>
                       <td className="px-3 py-2 text-right text-slate-500 font-semibold">{item.discount > 0 ? `${item.discount}%` : "—"}</td>
-                      <td className="px-3 py-2 text-right font-bold text-slate-800">GHS {(item.price * item.qty * (1 - item.discount / 100)).toFixed(2)}</td>
+                      <td className="px-3 py-2 text-right font-bold text-slate-800">GH₵ {(item.price * item.qty * (1 - item.discount / 100)).toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
             <div className="bg-slate-500/10 border border-slate-500/10 rounded-xl p-4 space-y-1.5 text-sm">
-              <div className="flex justify-between text-slate-600 font-medium"><span>Subtotal</span><span>GHS {viewSale.subtotal.toFixed(2)}</span></div>
-              {viewSale.discountAmount > 0 && <div className="flex justify-between text-rose-600 font-semibold"><span>Discount</span><span>-GHS {viewSale.discountAmount.toFixed(2)}</span></div>}
-              <div className="flex justify-between text-slate-600 font-medium"><span>Tax</span><span>GHS {viewSale.taxAmount.toFixed(2)}</span></div>
-              <div className="flex justify-between font-bold text-slate-800 text-base pt-1 border-t border-slate-200"><span>Total</span><span>GHS {viewSale.total.toFixed(2)}</span></div>
-              <div className="flex justify-between text-slate-500 font-medium"><span>Amount Paid</span><span>GHS {viewSale.amountPaid.toFixed(2)}</span></div>
-              <div className="flex justify-between text-slate-500 font-medium"><span>Change</span><span>GHS {viewSale.change.toFixed(2)}</span></div>
+              <div className="flex justify-between text-slate-600 font-medium"><span>Subtotal</span><span>GH₵ {viewSale.subtotal.toFixed(2)}</span></div>
+              {viewSale.discountAmount > 0 && <div className="flex justify-between text-rose-600 font-semibold"><span>Discount</span><span>-GH₵ {viewSale.discountAmount.toFixed(2)}</span></div>}
+              <div className="flex justify-between text-slate-600 font-medium"><span>Tax</span><span>GH₵ {viewSale.taxAmount.toFixed(2)}</span></div>
+              <div className="flex justify-between font-bold text-slate-800 text-base pt-1 border-t border-slate-200"><span>Total</span><span>GH₵ {viewSale.total.toFixed(2)}</span></div>
+              <div className="flex justify-between text-slate-500 font-medium"><span>Amount Paid</span><span>GH₵ {viewSale.amountPaid.toFixed(2)}</span></div>
+              <div className="flex justify-between text-slate-500 font-medium"><span>Change</span><span>GH₵ {viewSale.change.toFixed(2)}</span></div>
             </div>
           </div>
         )}

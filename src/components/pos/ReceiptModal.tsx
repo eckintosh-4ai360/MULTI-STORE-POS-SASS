@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+﻿import React, { useRef } from "react";
 import { usePOSStore, Sale } from "../../store/posStore";
 import { Printer, CheckCircle } from "lucide-react";
 import { Button } from "../ui/Button";
@@ -13,6 +13,9 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
   const { stores } = usePOSStore();
   const store = stores.find((s) => s.id === sale.storeId);
   const printRef = useRef<HTMLDivElement>(null);
+
+  // Map ISO currency codes to display symbols
+  const currencySymbol = store?.currency === "GHS" ? "GH₵" : (store?.currency ?? "GH₵");
 
   const handlePrint = () => {
     // Clone receipt content into the print root
@@ -43,36 +46,36 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
             {item.discount > 0 ? ` (-${item.discount}%)` : ""}
           </span>
           <span className="text-gray-800 font-medium">
-            {store?.currency ?? "GHS"} {(item.price * item.qty * (1 - item.discount / 100)).toFixed(2)}
+            {currencySymbol} {(item.price * item.qty * (1 - item.discount / 100)).toFixed(2)}
           </span>
         </div>
       ))}
       <div className="border-t border-dashed border-gray-300 my-2" />
       <div className="flex justify-between text-gray-600">
         <span>Subtotal</span>
-        <span>{store?.currency ?? "GHS"} {sale.subtotal.toFixed(2)}</span>
+        <span>{currencySymbol} {sale.subtotal.toFixed(2)}</span>
       </div>
       {sale.discountAmount > 0 && (
         <div className="flex justify-between text-red-500">
           <span>Discount</span>
-          <span>-{store?.currency ?? "GHS"} {sale.discountAmount.toFixed(2)}</span>
+          <span>-{currencySymbol} {sale.discountAmount.toFixed(2)}</span>
         </div>
       )}
       <div className="flex justify-between text-gray-600">
         <span>Tax ({store?.taxRate}%)</span>
-        <span>{store?.currency ?? "GHS"} {sale.taxAmount.toFixed(2)}</span>
+        <span>{currencySymbol} {sale.taxAmount.toFixed(2)}</span>
       </div>
       <div className="flex justify-between font-bold text-sm text-gray-800 pt-1 border-t border-dashed border-gray-300">
         <span>TOTAL</span>
-        <span>{store?.currency ?? "GHS"} {sale.total.toFixed(2)}</span>
+        <span>{currencySymbol} {sale.total.toFixed(2)}</span>
       </div>
       <div className="flex justify-between text-gray-500">
         <span>Paid ({sale.paymentMethod.replace("_", " ")})</span>
-        <span>{store?.currency ?? "GHS"} {sale.amountPaid.toFixed(2)}</span>
+        <span>{currencySymbol} {sale.amountPaid.toFixed(2)}</span>
       </div>
       <div className="flex justify-between text-gray-500">
         <span>Change</span>
-        <span>{store?.currency ?? "GHS"} {sale.change.toFixed(2)}</span>
+        <span>{currencySymbol} {sale.change.toFixed(2)}</span>
       </div>
       <div className="border-t border-dashed border-gray-300 my-2" />
       {store?.receiptFooter && <p className="text-center text-gray-400">{store.receiptFooter}</p>}
@@ -88,7 +91,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
           </div>
           <h3 className="font-bold text-gray-800 text-xl">Sale Complete!</h3>
           <p className="text-gray-500 text-sm mt-1">
-            Change: <span className="font-semibold text-emerald-600">{store?.currency ?? "GHS"} {sale.change.toFixed(2)}</span>
+            Change: <span className="font-semibold text-emerald-600">{currencySymbol} {sale.change.toFixed(2)}</span>
           </p>
         </div>
         {receiptContent}

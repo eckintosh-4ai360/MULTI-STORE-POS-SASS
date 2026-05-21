@@ -256,10 +256,10 @@ export default function LandingPage() {
                 <h3 className="text-xl font-black text-slate-900">{plan.name}</h3>
                 <p className="text-slate-500 text-sm mt-1 mb-5">{plan.description}</p>
                 <div className="mb-2">
-                  <span className="text-5xl font-black text-slate-900">${annual ? plan.price.annual : plan.price.monthly}</span>
+                  <span className="text-5xl font-black text-slate-900">GH₵{annual ? plan.price.annual : plan.price.monthly}</span>
                   <span className="text-slate-400 font-medium">/mo</span>
                 </div>
-                {annual && <p className="text-xs text-emerald-500 font-semibold mb-4">Billed annually (save ${(plan.price.monthly - plan.price.annual) * 12}/yr)</p>}
+                {annual && <p className="text-xs text-emerald-500 font-semibold mb-4">Billed annually (save GH₵{(plan.price.monthly - plan.price.annual) * 12}/yr)</p>}
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-5 pb-5 border-b border-slate-100">{plan.limits}</p>
                 <ul className="space-y-3 mb-8 flex-1">
                   {plan.features.map(f => (

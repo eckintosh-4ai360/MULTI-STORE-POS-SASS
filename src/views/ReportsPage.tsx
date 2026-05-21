@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+﻿import React, { useMemo, useState } from "react";
 import { usePOSStore } from "../store/posStore";
 import { Card, CardHeader, CardBody } from "../components/ui/Card";
 import {
@@ -111,10 +111,10 @@ export const ReportsPage: React.FC = () => {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total Revenue", value: `GHS ${totalRevenue.toFixed(2)}`, icon: <DollarSign size={18} />, color: "text-indigo-600 bg-indigo-500/10" },
-          { label: "Gross Profit", value: `GHS ${totalProfit.toFixed(2)}`, icon: <TrendingUp size={18} />, color: "text-emerald-600 bg-emerald-500/10" },
+          { label: "Total Revenue", value: `GH₵ ${totalRevenue.toFixed(2)}`, icon: <DollarSign size={18} />, color: "text-indigo-600 bg-indigo-500/10" },
+          { label: "Gross Profit", value: `GH₵ ${totalProfit.toFixed(2)}`, icon: <TrendingUp size={18} />, color: "text-emerald-600 bg-emerald-500/10" },
           { label: "Transactions", value: String(periodSales.length), icon: <ShoppingBag size={18} />, color: "text-amber-600 bg-amber-500/10" },
-          { label: "Avg. Sale Value", value: `GHS ${avgSale.toFixed(2)}`, icon: <Package size={18} />, color: "text-purple-600 bg-purple-500/10" },
+          { label: "Avg. Sale Value", value: `GH₵ ${avgSale.toFixed(2)}`, icon: <Package size={18} />, color: "text-purple-600 bg-purple-500/10" },
         ].map(s => (
           <div key={s.label} className="glass-card rounded-2xl border border-white/60 p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition">
             <div className={`p-2.5 rounded-xl ${s.color.split(" ")[1]}`}>
@@ -137,7 +137,7 @@ export const ReportsPage: React.FC = () => {
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#64748b" }} />
               <YAxis tick={{ fontSize: 11, fill: "#64748b" }} />
-              <Tooltip formatter={(val, name) => [`GHS ${val}`, name === "revenue" ? "Revenue" : "Profit"]} />
+              <Tooltip formatter={(val, name) => [`GH₵ ${val}`, name === "revenue" ? "Revenue" : "Profit"]} />
               <Legend formatter={v => <span className="text-xs font-semibold text-slate-600 capitalize">{v}</span>} />
               <Line type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={2.5} dot={false} />
               <Line type="monotone" dataKey="profit" stroke="#10b981" strokeWidth={2.5} dot={false} strokeDasharray="4 2" />
@@ -156,7 +156,7 @@ export const ReportsPage: React.FC = () => {
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
                 <XAxis type="number" tick={{ fontSize: 11, fill: "#64748b" }} />
                 <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: "#64748b" }} width={100} />
-                <Tooltip formatter={(val) => [`GHS ${val}`, "Revenue"]} />
+                <Tooltip formatter={(val) => [`GH₵ ${val}`, "Revenue"]} />
                 <Bar dataKey="revenue" fill="#6366f1" radius={[0, 6, 6, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -172,7 +172,7 @@ export const ReportsPage: React.FC = () => {
                 <Pie data={paymentBreakdown} cx="50%" cy="50%" outerRadius={85} dataKey="value" paddingAngle={3}>
                   {paymentBreakdown.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
                 </Pie>
-                <Tooltip formatter={(val) => [`GHS ${val}`, ""]} />
+                <Tooltip formatter={(val) => [`GH₵ ${val}`, ""]} />
                 <Legend iconType="circle" iconSize={8} formatter={v => <span className="text-xs font-semibold text-slate-600 capitalize">{v}</span>} />
               </PieChart>
             </ResponsiveContainer>
@@ -201,8 +201,8 @@ export const ReportsPage: React.FC = () => {
                     <tr key={i} className="hover:bg-slate-50/50 transition">
                       <td className="px-4 py-3 font-semibold text-slate-800">{s.name}</td>
                       <td className="px-4 py-3 text-right text-slate-600 font-medium">{s.count}</td>
-                      <td className="px-4 py-3 text-right font-bold text-slate-800">GHS {s.revenue.toFixed(2)}</td>
-                      <td className="px-4 py-3 text-right text-emerald-600 font-bold">GHS {s.profit.toFixed(2)}</td>
+                      <td className="px-4 py-3 text-right font-bold text-slate-800">GH₵ {s.revenue.toFixed(2)}</td>
+                      <td className="px-4 py-3 text-right text-emerald-600 font-bold">GH₵ {s.profit.toFixed(2)}</td>
                       <td className="px-4 py-3 text-right text-slate-500 font-semibold">{s.revenue ? ((s.profit / s.revenue) * 100).toFixed(1) : 0}%</td>
                     </tr>
                   ))}
@@ -232,8 +232,8 @@ export const ReportsPage: React.FC = () => {
                   <tr key={i} className="hover:bg-slate-50/50 transition">
                     <td className="px-4 py-2.5 text-slate-700 font-medium">{d.day}</td>
                     <td className="px-4 py-2.5 text-right text-slate-600 font-medium">{d.count}</td>
-                    <td className="px-4 py-2.5 text-right font-bold text-slate-800">GHS {d.revenue.toFixed(2)}</td>
-                    <td className="px-4 py-2.5 text-right text-emerald-600 font-bold">GHS {d.profit.toFixed(2)}</td>
+                    <td className="px-4 py-2.5 text-right font-bold text-slate-800">GH₵ {d.revenue.toFixed(2)}</td>
+                    <td className="px-4 py-2.5 text-right text-emerald-600 font-bold">GH₵ {d.profit.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>

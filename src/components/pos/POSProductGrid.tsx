@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Product } from "../../store/posStore";
 import { Badge } from "../ui/Badge";
 import { Search, PauseCircle } from "lucide-react";
@@ -150,7 +150,7 @@ export const POSProductGrid: React.FC<POSProductGridProps> = ({
                     {product.name}
                   </p>
                   <p className="text-sm font-bold text-indigo-600 mt-0.5">
-                    GHS {product.price.toFixed(2)}
+                    GH₵ {product.price.toFixed(2)}
                   </p>
                   <div className="flex items-center justify-between mt-1.5">
                     <span

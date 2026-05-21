@@ -1,4 +1,4 @@
-import { create } from "zustand";
+﻿import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -232,9 +232,9 @@ export interface POSState {
 // ─── Seed Data ────────────────────────────────────────────────────────────────
 
 const seedStores: Store[] = [
-  { id: "s1", name: "Accra Mall Branch", location: "Accra, Greater Accra", currency: "GHS", taxRate: 15, status: "active", receiptHeader: "Thank you for shopping with us!", receiptFooter: "Visit us again soon." },
-  { id: "s2", name: "Kumasi Central", location: "Kumasi, Ashanti Region", currency: "GHS", taxRate: 15, status: "active", receiptHeader: "Kumasi's Best Store", receiptFooter: "Call us: 0244-123456" },
-  { id: "s3", name: "Takoradi Harbour", location: "Takoradi, Western Region", currency: "GHS", taxRate: 15, status: "active", receiptHeader: "Quality Products, Fair Prices", receiptFooter: "Follow us on social media" },
+  { id: "s1", name: "Accra Mall Branch", location: "Accra, Greater Accra", currency: "GH₵", taxRate: 15, status: "active", receiptHeader: "Thank you for shopping with us!", receiptFooter: "Visit us again soon." },
+  { id: "s2", name: "Kumasi Central", location: "Kumasi, Ashanti Region", currency: "GH₵", taxRate: 15, status: "active", receiptHeader: "Kumasi's Best Store", receiptFooter: "Call us: 0244-123456" },
+  { id: "s3", name: "Takoradi Harbour", location: "Takoradi, Western Region", currency: "GH₵", taxRate: 15, status: "active", receiptHeader: "Quality Products, Fair Prices", receiptFooter: "Follow us on social media" },
 ];
 
 const seedUsers: User[] = [

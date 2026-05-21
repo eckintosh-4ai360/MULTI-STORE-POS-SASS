@@ -7,7 +7,7 @@ import { Input, Select } from "../components/ui/Input";
 import { Modal } from "../components/ui/Modal";
 
 const currencies = [
-  { value: "GHS", label: "GHS — Ghanaian Cedi" },
+  { value: "GHS", label: "GH₵ — Ghanaian Cedi" },
   { value: "USD", label: "USD — US Dollar" },
   { value: "EUR", label: "EUR — Euro" },
   { value: "NGN", label: "NGN — Nigerian Naira" },
@@ -114,7 +114,7 @@ export const StoresPage: React.FC = () => {
                 <div className="bg-white/40 border border-slate-200/40 rounded-xl p-3 flex items-center justify-between mb-4">
                   <div>
                     <p className="text-xs text-slate-500">Total Revenue</p>
-                    <p className="font-bold text-slate-800">{store.currency} {storeRevenue.toFixed(2)}</p>
+                    <p className="font-bold text-slate-800">{store.currency === "GHS" ? "GH₵" : store.currency} {storeRevenue.toFixed(2)}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-slate-500">Tax Rate</p>
