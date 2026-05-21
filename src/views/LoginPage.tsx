@@ -18,20 +18,37 @@ const features = [
 
 export const LoginPage: React.FC = () => {
   const login = usePOSStore(s => s.login);
-  const [email, setEmail] = useState("admin@multipos.com");
-  const [password, setPassword] = useState("password123");
+  const currentUser = usePOSStore(s => s.currentUser);
+  const _hasHydrated = usePOSStore(s => s._hasHydrated);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
+
+  // If already logged in (after hydration), go straight to dashboard
+  React.useEffect(() => {
+    if (_hasHydrated && currentUser) {
+      window.location.replace("/dashboard");
+    }
+  }, [_hasHydrated, currentUser]);
+
+  // Show nothing until we know the hydration state
+  if (!_hasHydrated) return null;
+  // Already logged in — redirect handled above
+  if (currentUser) return null;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    await new Promise(r => setTimeout(r, 600));
     const ok = await login(email, password);
-    if (!ok) setError("Invalid credentials or account disabled.");
-    setLoading(false);
+    if (ok) {
+      window.location.href = "/dashboard";
+    } else {
+      setError("Invalid credentials or account disabled.");
+      setLoading(false);
+    }
   };
 
   return (

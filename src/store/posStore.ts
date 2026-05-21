@@ -221,6 +221,9 @@ export interface POSState {
   isLoading: boolean;
   dataError: string | null;
 
+  // Hydration flag — true once Zustand has finished loading from localStorage
+  _hasHydrated: boolean;
+
   // Actions — Data
   fetchData: () => Promise<void>;
 
@@ -324,6 +327,7 @@ export const usePOSStore = create<POSState>()(
     (set, get) => ({
       currentUser: null,
       currentStoreId: null,
+      _hasHydrated: false, // Set to true by onRehydrateStorage after localStorage is read
       // Start with empty arrays — real data loads via fetchData() after login
       stores: [],
       users: [],
@@ -580,6 +584,10 @@ export const usePOSStore = create<POSState>()(
         activePage: state.activePage,
         sidebarOpen: state.sidebarOpen,
       }),
+      onRehydrateStorage: () => (state) => {
+        // Mark hydration complete — components wait for this before redirecting
+        if (state) state._hasHydrated = true;
+      },
     }
   )
 );

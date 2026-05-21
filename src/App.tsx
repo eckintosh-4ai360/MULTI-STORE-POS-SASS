@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Toaster } from "react-hot-toast";
 import { usePOSStore } from "./store/posStore";
-import { LoginPage } from "./views/LoginPage";
 import { Sidebar } from "./components/layout/Sidebar";
 import { TopBar } from "./components/layout/TopBar";
 import { Dashboard } from "./views/Dashboard";
@@ -54,16 +53,26 @@ function LoadingSkeleton() {
 }
 
 export default function App() {
-  const { currentUser, activePage, sidebarOpen, fetchData, isLoading, dataError } = usePOSStore();
+  const { currentUser, activePage, sidebarOpen, fetchData, isLoading, dataError, stores, _hasHydrated } = usePOSStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   usePageTitle(activePage);
 
+  // Fetch org data once on mount (only if logged in and store not yet hydrated)
+  // Must be called before any early returns (Rules of Hooks)
   React.useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (_hasHydrated && currentUser && stores.length === 0) {
+      fetchData();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [_hasHydrated, currentUser]);
 
+  // Wait for Zustand to read from localStorage before deciding where to go
+  if (!_hasHydrated) return null;
+
+  // Not logged in — redirect to /login
   if (!currentUser) {
-    return <LoginPage />;
+    if (typeof window !== "undefined") window.location.replace("/login");
+    return null;
   }
 
   const isPOS = activePage === "pos";

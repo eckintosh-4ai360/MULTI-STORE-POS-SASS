@@ -5,6 +5,8 @@ import {
   CheckCircle, ArrowRight, ArrowLeft, Eye, EyeOff,
   Zap, Package, BarChart3, Lock, Mail, AlertCircle
 } from "lucide-react";
+import { usePOSStore } from "../../store/posStore";
+
 
 type Plan = "starter" | "pro" | "enterprise";
 
@@ -25,6 +27,7 @@ const STEP_LABELS = ["Account", "Business", "Plan", "Your Store"];
 const STEP_ICONS = [User, Building2, CreditCard, Store];
 
 export default function RegisterPage() {
+  const login = usePOSStore(s => s.login);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -68,15 +71,10 @@ export default function RegisterPage() {
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Registration failed. Please try again."); setLoading(false); return; }
 
-      // Auto-login
-      const loginRes = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email, password: form.password }),
-      });
-
+      // Auto-login via Zustand so currentUser is set before redirect
       setStep(5);
-      setTimeout(() => { window.location.href = loginRes.ok ? "/dashboard" : "/login"; }, 2500);
+      const ok = await login(form.email, form.password);
+      setTimeout(() => { window.location.href = ok ? "/dashboard" : "/login"; }, 2000);
     } catch {
       setError("Network error. Please check your connection.");
       setLoading(false);
