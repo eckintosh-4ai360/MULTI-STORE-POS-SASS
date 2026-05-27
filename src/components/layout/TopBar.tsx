@@ -16,6 +16,7 @@ const pageTitles: Record<string, string> = {
   reports: "Reports & Analytics",
   stores: "Store Management",
   settings: "Settings",
+  profile: "My Profile",
 };
 
 interface TopBarProps {
@@ -23,7 +24,7 @@ interface TopBarProps {
 }
 
 export const TopBar: React.FC<TopBarProps> = ({ onMobileMenuOpen }) => {
-  const { activePage, currentUser, products, currentStoreId } = usePOSStore();
+  const { activePage, currentUser, products, currentStoreId, setActivePage } = usePOSStore();
   const lowStock = products.filter(p => p.storeId === currentStoreId && p.stock <= p.lowStockThreshold).length;
 
   return (
@@ -56,8 +57,11 @@ export const TopBar: React.FC<TopBarProps> = ({ onMobileMenuOpen }) => {
           )}
         </div>
 
-        {/* User chip */}
-        <button className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-indigo-50 transition group">
+        {/* User chip — clicking opens profile page */}
+        <button
+          onClick={() => setActivePage("profile")}
+          className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-indigo-50 transition group"
+        >
           <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white shadow-md flex-shrink-0">
             {currentUser?.name?.[0] ?? "U"}
           </div>

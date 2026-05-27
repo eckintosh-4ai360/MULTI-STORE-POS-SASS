@@ -18,11 +18,14 @@ type StoreForm = { name: string; location: string; currency: string; taxRate: nu
 const emptyStore: StoreForm = { name: "", location: "", currency: "GHS", taxRate: 15, status: "active", receiptHeader: "", receiptFooter: "", logo: "" };
 
 export const StoresPage: React.FC = () => {
-  const { stores, addStore, updateStore, toggleStoreStatus, sales, products, users } = usePOSStore();
+  const { stores, addStore, updateStore, sales, products, users, currentUser, organization } = usePOSStore();
   const [showModal, setShowModal] = useState(false);
   const [editStore, setEditStore] = useState<Store | null>(null);
   const [form, setForm] = useState<StoreForm>({ ...emptyStore });
   const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -48,18 +51,77 @@ export const StoresPage: React.FC = () => {
     }
   };
 
-  const openAdd = () => { setEditStore(null); setForm({ ...emptyStore }); setShowModal(true); };
+  const openAdd = () => { setEditStore(null); setForm({ ...emptyStore }); setError(null); setShowModal(true); };
   const openEdit = (s: Store) => {
     setEditStore(s);
     setForm({ name: s.name, location: s.location, currency: s.currency, taxRate: s.taxRate, status: s.status, receiptHeader: s.receiptHeader ?? "", receiptFooter: s.receiptFooter ?? "", logo: s.logo ?? "" });
+    setError(null);
     setShowModal(true);
   };
 
-  const handleSave = () => {
-    if (!form.name) return;
-    if (editStore) { updateStore(editStore.id, form); }
-    else { addStore(form); }
-    setShowModal(false);
+  const handleSave = async () => {
+    if (!form.name.trim()) return;
+    setSaving(true);
+    setError(null);
+    try {
+      if (editStore) {
+        // ── UPDATE existing store via API ──────────────────────────────
+        const res = await fetch("/api/stores", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", "x-user-id": currentUser!.id },
+          body: JSON.stringify({ id: editStore.id, ...form }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || "Failed to update store");
+        }
+        const updated: Store = await res.json();
+        // Sync the server response back into Zustand
+        updateStore(updated.id, updated);
+      } else {
+        // ── CREATE new store via API ────────────────────────────────────
+        const res = await fetch("/api/stores", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-user-id": currentUser!.id },
+          body: JSON.stringify({ ...form, organizationId: organization?.id ?? null }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || "Failed to create store");
+        }
+        const created: Store = await res.json();
+        // Add the server-assigned record (with the real DB id) into Zustand
+        addStore(created as any);
+      }
+      setShowModal(false);
+    } catch (err: any) {
+      console.error("Store save error:", err);
+      setError(err.message ?? "Something went wrong. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleToggle = async (store: Store) => {
+    setTogglingId(store.id);
+    try {
+      const newStatus = store.status === "active" ? "inactive" : "active";
+      const res = await fetch("/api/stores", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "x-user-id": currentUser!.id },
+        body: JSON.stringify({ id: store.id, status: newStatus }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to update store status");
+      }
+      const updated: Store = await res.json();
+      updateStore(updated.id, updated);
+    } catch (err: any) {
+      console.error("Toggle store status error:", err);
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   return (
@@ -124,10 +186,16 @@ export const StoresPage: React.FC = () => {
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => toggleStoreStatus(store.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition flex-1 justify-center ${store.status === "active" ? "text-amber-700 bg-amber-500/10 hover:bg-amber-500/20" : "text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20"}`}
+                    onClick={() => handleToggle(store)}
+                    disabled={togglingId === store.id}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition flex-1 justify-center disabled:opacity-50 ${store.status === "active" ? "text-amber-700 bg-amber-500/10 hover:bg-amber-500/20" : "text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20"}`}
                   >
-                    {store.status === "active" ? <><ToggleLeft size={14} />Deactivate</> : <><ToggleRight size={14} />Activate</>}
+                    {togglingId === store.id
+                      ? <span className="animate-pulse">Saving…</span>
+                      : store.status === "active"
+                        ? <><ToggleLeft size={14} />Deactivate</>
+                        : <><ToggleRight size={14} />Activate</>
+                    }
                   </button>
                   <button onClick={() => openEdit(store)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-indigo-700 bg-indigo-500/10 hover:bg-indigo-500/20 transition flex-1 justify-center">
                     <Edit2 size={14} /> Edit Store
@@ -144,9 +212,14 @@ export const StoresPage: React.FC = () => {
         onClose={() => setShowModal(false)}
         title={editStore ? "Edit Store" : "Add New Store"}
         size="md"
-        footer={<><Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button><Button onClick={handleSave}>Save Store</Button></>}
+        footer={<><Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button><Button onClick={handleSave} disabled={saving}>{saving ? "Saving…" : "Save Store"}</Button></>}
       >
         <div className="space-y-4">
+          {error && (
+            <div className="px-4 py-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl font-medium">
+              {error}
+            </div>
+          )}
           <Input label="Store Name *" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Accra Mall Branch" />
           <Input label="Location / Address" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="e.g. Accra, Greater Accra" />
           <div className="grid grid-cols-2 gap-3">

@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { usePagination } from "../utils/usePagination";
 import { usePOSStore, Product, StockMoveType } from "../store/posStore";
 import { Plus, Search, Edit2, Trash2, AlertTriangle, Package, ArrowUpDown, XCircle, CalendarClock } from "lucide-react";
@@ -22,6 +22,9 @@ export const ProductsPage: React.FC = () => {
   const [stockForm, setStockForm] = useState({ qty: 1, type: "IN" as StockMoveType, note: "" });
   const [filterStatus, setFilterStatus] = useState("all");
   const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [stockSaving, setStockSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const isSuperAdmin = currentUser?.role === "super_admin";
   const canEdit = ["super_admin", "store_admin", "manager"].includes(currentUser?.role ?? "");
@@ -43,36 +46,27 @@ export const ProductsPage: React.FC = () => {
   const handleProductImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
     setUploading(true);
     const formData = new FormData();
     formData.append("file", file);
-    
     try {
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setForm(f => ({ ...f, image: data.url }));
-      }
-    } catch (err) {
-      console.error("Product image upload failed:", err);
-    } finally {
-      setUploading(false);
-    }
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      if (res.ok) { const data = await res.json(); setForm(f => ({ ...f, image: data.url })); }
+    } catch (err) { console.error("Product image upload failed:", err); }
+    finally { setUploading(false); }
   };
 
   const openAdd = () => {
     setEditProduct(null);
-    setForm({ ...emptyProduct, storeId: storeId, categoryId: storeCategories[0]?.id ?? "" });
+    setForm({ ...emptyProduct, storeId, categoryId: storeCategories[0]?.id ?? "" });
+    setError(null);
     setShowModal(true);
   };
 
   const openEdit = (p: Product) => {
     setEditProduct(p);
     setForm({ name: p.name, barcode: p.barcode, price: p.price, costPrice: p.costPrice, stock: p.stock, categoryId: p.categoryId, storeId: p.storeId, lowStockThreshold: p.lowStockThreshold, expiryDate: p.expiryDate ?? "", image: p.image ?? "" });
+    setError(null);
     setShowModal(true);
   };
 
@@ -82,27 +76,79 @@ export const ProductsPage: React.FC = () => {
     setShowStockModal(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name || form.price <= 0) return;
-    if (editProduct) {
-      updateProduct(editProduct.id, form);
-    } else {
-      addProduct({ ...form, storeId: form.storeId || storeId });
+    setSaving(true);
+    setError(null);
+    try {
+      if (editProduct) {
+        // UPDATE
+        const res = await fetch("/api/products", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", "x-user-id": currentUser!.id },
+          body: JSON.stringify({ id: editProduct.id, ...form }),
+        });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Failed to update product");
+        const updated = await res.json();
+        updateProduct(updated.id, updated);
+      } else {
+        // CREATE
+        const res = await fetch("/api/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-user-id": currentUser!.id },
+          body: JSON.stringify({ ...form, storeId: form.storeId || storeId }),
+        });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Failed to create product");
+        const created = await res.json();
+        addProduct(created);
+      }
+      setShowModal(false);
+    } catch (err: any) {
+      setError(err.message ?? "Something went wrong.");
+    } finally {
+      setSaving(false);
     }
-    setShowModal(false);
   };
 
-  const handleStockAdjust = () => {
+  const handleStockAdjust = async () => {
     if (!stockProduct || stockForm.qty <= 0) return;
-    adjustStock(stockProduct.id, stockForm.qty, stockForm.type, stockForm.note);
-    setShowStockModal(false);
+    setStockSaving(true);
+    try {
+      const res = await fetch("/api/products", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "x-user-id": currentUser!.id },
+        body: JSON.stringify({ action: "adjustStock", productId: stockProduct.id, qty: stockForm.qty, type: stockForm.type, note: stockForm.note }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Failed to adjust stock");
+      const { product: updatedProduct, log } = await res.json();
+      // Sync updated stock and new inventory log back into Zustand
+      updateProduct(updatedProduct.id, updatedProduct);
+      adjustStock(stockProduct.id, stockForm.qty, stockForm.type, stockForm.note); // local log entry (id safe)
+      setShowStockModal(false);
+    } catch (err: any) {
+      console.error("Stock adjust error:", err);
+    } finally {
+      setStockSaving(false);
+    }
+  };
+
+  const handleDelete = async (p: Product) => {
+    if (!confirm(`Delete "${p.name}"? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/products?id=${p.id}`, {
+        method: "DELETE",
+        headers: { "x-user-id": currentUser!.id },
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Failed to delete product");
+      deleteProduct(p.id);
+    } catch (err: any) {
+      console.error("Delete product error:", err);
+      alert(err.message ?? "Failed to delete product.");
+    }
   };
 
   const storeName = (id: string) => stores.find(s => s.id === id)?.name ?? id;
-  const categoryName = (id: string) => {
-    const cat = categories.find(c => c.id === id);
-    return cat?.name ?? id;
-  };
+  const categoryName = (id: string) => categories.find(c => c.id === id)?.name ?? id;
 
   return (
     <div className="space-y-4">
@@ -215,7 +261,7 @@ export const ProductsPage: React.FC = () => {
                       <div className="flex items-center gap-1">
                         <button onClick={() => openStock(p)} className="p-1.5 text-emerald-600 hover:bg-emerald-500/10 rounded-lg transition" title="Adjust Stock"><ArrowUpDown size={14} /></button>
                         <button onClick={() => openEdit(p)} className="p-1.5 text-blue-600 hover:bg-blue-500/10 rounded-lg transition" title="Edit"><Edit2 size={14} /></button>
-                        <button onClick={() => deleteProduct(p.id)} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition" title="Delete"><Trash2 size={14} /></button>
+                        <button onClick={() => handleDelete(p)} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition" title="Delete"><Trash2 size={14} /></button>
                       </div>
                     </td>
                   )}
@@ -235,17 +281,9 @@ export const ProductsPage: React.FC = () => {
                 Showing {((prodPage - 1) * 20) + 1}–{Math.min(prodPage * 20, storeProducts.length)} of {storeProducts.length} products
               </p>
               <div className="flex gap-1">
-                <button
-                  onClick={() => setProdPage(p => Math.max(1, p - 1))}
-                  disabled={!prodHasPrev}
-                  className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200/60 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                >Prev</button>
+                <button onClick={() => setProdPage(p => Math.max(1, p - 1))} disabled={!prodHasPrev} className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200/60 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition">Prev</button>
                 <span className="px-3 py-1.5 text-xs font-semibold text-slate-500">{prodPage} / {prodTotalPages}</span>
-                <button
-                  onClick={() => setProdPage(p => Math.min(prodTotalPages, p + 1))}
-                  disabled={!prodHasNext}
-                  className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200/60 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                >Next</button>
+                <button onClick={() => setProdPage(p => Math.min(prodTotalPages, p + 1))} disabled={!prodHasNext} className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-200/60 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition">Next</button>
               </div>
             </div>
           )}
@@ -253,14 +291,11 @@ export const ProductsPage: React.FC = () => {
       </Card>
 
       {/* Add/Edit Modal */}
-      <Modal
-        open={showModal}
-        onClose={() => setShowModal(false)}
-        title={editProduct ? "Edit Product" : "Add New Product"}
-        size="md"
-        footer={<><Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button><Button onClick={handleSave}>Save Product</Button></>}
+      <Modal open={showModal} onClose={() => setShowModal(false)} title={editProduct ? "Edit Product" : "Add New Product"} size="md"
+        footer={<><Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button><Button onClick={handleSave} disabled={saving}>{saving ? "Saving…" : "Save Product"}</Button></>}
       >
         <div className="space-y-4">
+          {error && <div className="px-4 py-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl font-medium">{error}</div>}
           <Input label="Product Name *" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Coca-Cola 500ml" />
           <Input label="Barcode" value={form.barcode} onChange={e => setForm(f => ({ ...f, barcode: e.target.value }))} placeholder="Scan or type barcode" />
           <div className="grid grid-cols-2 gap-3">
@@ -271,19 +306,11 @@ export const ProductsPage: React.FC = () => {
             <Input label="Current Stock" type="number" value={form.stock || ""} onChange={e => setForm(f => ({ ...f, stock: parseInt(e.target.value) || 0 }))} />
             <Input label="Low Stock Alert At" type="number" value={form.lowStockThreshold || ""} onChange={e => setForm(f => ({ ...f, lowStockThreshold: parseInt(e.target.value) || 10 }))} />
           </div>
-          <Select
-            label="Category"
-            value={form.categoryId}
-            onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))}
-            options={[{ value: "", label: "Select Category" }, ...storeCategories.map(c => ({ value: c.id, label: c.name }))]}
-          />
+          <Select label="Category" value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))}
+            options={[{ value: "", label: "Select Category" }, ...storeCategories.map(c => ({ value: c.id, label: c.name }))]} />
           {isSuperAdmin && (
-            <Select
-              label="Store"
-              value={form.storeId}
-              onChange={e => setForm(f => ({ ...f, storeId: e.target.value }))}
-              options={stores.map(s => ({ value: s.id, label: s.name }))}
-            />
+            <Select label="Store" value={form.storeId} onChange={e => setForm(f => ({ ...f, storeId: e.target.value }))}
+              options={stores.map(s => ({ value: s.id, label: s.name }))} />
           )}
           <Input label="Expiry Date (optional)" type="date" value={form.expiryDate} onChange={e => setForm(f => ({ ...f, expiryDate: e.target.value }))} />
           <div>
@@ -292,26 +319,13 @@ export const ProductsPage: React.FC = () => {
               {form.image ? (
                 <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-slate-200 flex-shrink-0">
                   <img src={form.image} alt="Product Preview" className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => setForm(f => ({ ...f, image: "" }))}
-                    className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 hover:opacity-100 transition text-[9px] font-bold"
-                  >
-                    Remove
-                  </button>
+                  <button type="button" onClick={() => setForm(f => ({ ...f, image: "" }))} className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 hover:opacity-100 transition text-[9px] font-bold">Remove</button>
                 </div>
               ) : (
-                <div className="w-12 h-12 rounded-xl bg-slate-50 border-2 border-dashed border-slate-200/50 flex items-center justify-center text-slate-400 text-xs flex-shrink-0 font-medium">
-                  None
-                </div>
+                <div className="w-12 h-12 rounded-xl bg-slate-50 border-2 border-dashed border-slate-200/50 flex items-center justify-center text-slate-400 text-xs flex-shrink-0 font-medium">None</div>
               )}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleProductImageUpload}
-                disabled={uploading}
-                className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-500/10 file:text-indigo-700 hover:file:bg-indigo-500/20 file:cursor-pointer"
-              />
+              <input type="file" accept="image/*" onChange={handleProductImageUpload} disabled={uploading}
+                className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-500/10 file:text-indigo-700 hover:file:bg-indigo-500/20 file:cursor-pointer" />
               {uploading && <span className="text-[10px] text-slate-400 font-medium">Uploading...</span>}
             </div>
           </div>
@@ -319,27 +333,15 @@ export const ProductsPage: React.FC = () => {
       </Modal>
 
       {/* Stock Adjust Modal */}
-      <Modal
-        open={showStockModal}
-        onClose={() => setShowStockModal(false)}
-        title={`Adjust Stock — ${stockProduct?.name}`}
-        size="sm"
-        footer={<><Button variant="secondary" onClick={() => setShowStockModal(false)}>Cancel</Button><Button onClick={handleStockAdjust}>Confirm</Button></>}
+      <Modal open={showStockModal} onClose={() => setShowStockModal(false)} title={`Adjust Stock — ${stockProduct?.name}`} size="sm"
+        footer={<><Button variant="secondary" onClick={() => setShowStockModal(false)}>Cancel</Button><Button onClick={handleStockAdjust} disabled={stockSaving}>{stockSaving ? "Saving…" : "Confirm"}</Button></>}
       >
         <div className="space-y-4">
           <div className="bg-slate-500/10 border border-slate-500/20 rounded-xl p-3 text-sm">
             <p className="text-slate-500 font-medium">Current Stock: <span className="font-bold text-slate-800">{stockProduct?.stock} units</span></p>
           </div>
-          <Select
-            label="Adjustment Type"
-            value={stockForm.type}
-            onChange={e => setStockForm(f => ({ ...f, type: e.target.value as StockMoveType }))}
-            options={[
-              { value: "IN", label: "Stock In (Add)" },
-              { value: "OUT", label: "Stock Out (Remove)" },
-              { value: "TRANSFER", label: "Transfer In" },
-            ]}
-          />
+          <Select label="Adjustment Type" value={stockForm.type} onChange={e => setStockForm(f => ({ ...f, type: e.target.value as StockMoveType }))}
+            options={[{ value: "IN", label: "Stock In (Add)" }, { value: "OUT", label: "Stock Out (Remove)" }, { value: "TRANSFER", label: "Transfer In" }]} />
           <Input label="Quantity" type="number" min="1" value={stockForm.qty || ""} onChange={e => setStockForm(f => ({ ...f, qty: parseInt(e.target.value) || 1 }))} />
           <Input label="Note (optional)" value={stockForm.note} onChange={e => setStockForm(f => ({ ...f, note: e.target.value }))} placeholder="Reason for adjustment" />
         </div>

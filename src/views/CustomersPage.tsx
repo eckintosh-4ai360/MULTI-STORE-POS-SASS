@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { usePOSStore, Customer } from "../store/posStore";
 import { Plus, Search, Edit2, Users, Phone, Mail, AlertCircle } from "lucide-react";
 import { Button } from "../components/ui/Button";
@@ -12,6 +12,8 @@ export const CustomersPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editCustomer, setEditCustomer] = useState<Customer | null>(null);
   const [form, setForm] = useState({ name: "", phone: "", email: "", creditBalance: 0 });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const isSuperAdmin = currentUser?.role === "super_admin";
   const storeCustomers = useMemo(() => {
@@ -23,30 +25,51 @@ export const CustomersPage: React.FC = () => {
   const openAdd = () => {
     setEditCustomer(null);
     setForm({ name: "", phone: "", email: "", creditBalance: 0 });
+    setError(null);
     setShowModal(true);
   };
 
   const openEdit = (c: Customer) => {
     setEditCustomer(c);
     setForm({ name: c.name, phone: c.phone, email: c.email ?? "", creditBalance: c.creditBalance });
+    setError(null);
     setShowModal(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name || !form.phone) return;
-    if (editCustomer) {
-      updateCustomer(editCustomer.id, form);
-    } else {
-      addCustomer({ ...form, storeId: currentStoreId ?? "", creditBalance: 0 });
+    setSaving(true);
+    setError(null);
+    try {
+      if (editCustomer) {
+        const res = await fetch("/api/customers", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editCustomer.id, ...form, storeId: editCustomer.storeId }),
+        });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Failed to update customer");
+        const updated = await res.json();
+        updateCustomer(updated.id, updated);
+      } else {
+        const res = await fetch("/api/customers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...form, storeId: currentStoreId ?? "", creditBalance: 0 }),
+        });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Failed to create customer");
+        const created = await res.json();
+        addCustomer(created);
+      }
+      setShowModal(false);
+    } catch (err: any) {
+      setError(err.message ?? "Something went wrong.");
+    } finally {
+      setSaving(false);
     }
-    setShowModal(false);
   };
 
-  const getCustomerSales = (customerId: string) =>
-    sales.filter(s => s.customerId === customerId).length;
-
-  const getCustomerTotal = (customerId: string) =>
-    sales.filter(s => s.customerId === customerId).reduce((sum, s) => sum + s.total, 0);
+  const getCustomerSales = (customerId: string) => sales.filter(s => s.customerId === customerId).length;
+  const getCustomerTotal = (customerId: string) => sales.filter(s => s.customerId === customerId).reduce((sum, s) => sum + s.total, 0);
 
   return (
     <div className="space-y-4">
@@ -119,14 +142,11 @@ export const CustomersPage: React.FC = () => {
         )}
       </div>
 
-      <Modal
-        open={showModal}
-        onClose={() => setShowModal(false)}
-        title={editCustomer ? "Edit Customer" : "Add New Customer"}
-        size="sm"
-        footer={<><Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button><Button onClick={handleSave}>Save</Button></>}
+      <Modal open={showModal} onClose={() => setShowModal(false)} title={editCustomer ? "Edit Customer" : "Add New Customer"} size="sm"
+        footer={<><Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button><Button onClick={handleSave} disabled={saving}>{saving ? "Saving…" : "Save"}</Button></>}
       >
         <div className="space-y-3">
+          {error && <div className="px-4 py-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl font-medium">{error}</div>}
           <Input label="Full Name *" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Customer name" />
           <Input label="Phone Number *" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="e.g. 0244-123456" />
           <Input label="Email (optional)" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="customer@email.com" />

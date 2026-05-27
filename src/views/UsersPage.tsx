@@ -22,10 +22,13 @@ const roleIcons: Record<Role, string> = {
 };
 
 export const UsersPage: React.FC = () => {
-  const { users, addUser, updateUser, toggleUserStatus, stores, currentUser } = usePOSStore();
+  const { users, addUser, updateUser, toggleUserStatus, stores, currentUser, organization } = usePOSStore();
   const [showModal, setShowModal] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [form, setForm] = useState({ name: "", email: "", role: "cashier" as Role, storeId: "" });
+  const [saving, setSaving] = useState(false);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const isSuperAdmin = currentUser?.role === "super_admin";
   const isAdmin = ["super_admin", "store_admin"].includes(currentUser?.role ?? "");
@@ -35,23 +38,77 @@ export const UsersPage: React.FC = () => {
   const openAdd = () => {
     setEditUser(null);
     setForm({ name: "", email: "", role: "cashier", storeId: stores[0]?.id ?? "" });
+    setError(null);
     setShowModal(true);
   };
 
   const openEdit = (u: User) => {
     setEditUser(u);
     setForm({ name: u.name, email: u.email, role: u.role, storeId: u.storeId ?? "" });
+    setError(null);
     setShowModal(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name || !form.email) return;
-    if (editUser) {
-      updateUser(editUser.id, { ...form, storeId: form.role === "super_admin" ? null : form.storeId });
-    } else {
-      addUser({ name: form.name, email: form.email, role: form.role, storeId: form.role === "super_admin" ? null : form.storeId, status: "active" });
+    setSaving(true);
+    setError(null);
+    try {
+      if (editUser) {
+        const res = await fetch("/api/users", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", "x-user-id": currentUser!.id },
+          body: JSON.stringify({ id: editUser.id, ...form, storeId: form.role === "super_admin" ? null : form.storeId }),
+        });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Failed to update user");
+        const updated = await res.json();
+        updateUser(updated.id, updated);
+      } else {
+        const res = await fetch("/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-user-id": currentUser!.id },
+          body: JSON.stringify({
+            name: form.name,
+            email: form.email,
+            role: form.role,
+            storeId: form.role === "super_admin" ? null : form.storeId,
+            status: "active",
+            organizationId: organization?.id ?? null,
+          }),
+        });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Failed to create user");
+        const created = await res.json();
+        addUser(created);
+      }
+      setShowModal(false);
+    } catch (err: any) {
+      setError(err.message ?? "Something went wrong.");
+    } finally {
+      setSaving(false);
     }
-    setShowModal(false);
+  };
+
+  const handleToggleStatus = async (u: User) => {
+    if (u.id === currentUser?.id) return;
+    setTogglingId(u.id);
+    try {
+      const newStatus = u.status === "active" ? "inactive" : "active";
+      const res = await fetch("/api/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "x-user-id": currentUser!.id },
+        body: JSON.stringify({ id: u.id, status: newStatus }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Failed to update user status");
+      const updated = await res.json();
+      updateUser(updated.id, updated);
+    } catch (err: any) {
+      console.error("Toggle user status error:", err);
+      // fallback: revert optimistic update
+      toggleUserStatus(u.id);
+      setTimeout(() => toggleUserStatus(u.id), 0);
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   const storeName = (id: string | null) => {
@@ -114,9 +171,7 @@ export const UsersPage: React.FC = () => {
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <Badge variant={roleColors[u.role]}>
-                    {roleIcons[u.role]} {u.role.replace("_", " ")}
-                  </Badge>
+                  <Badge variant={roleColors[u.role]}>{roleIcons[u.role]} {u.role.replace("_", " ")}</Badge>
                 </td>
                 {isSuperAdmin && <td className="px-4 py-3 text-xs text-slate-500">{storeName(u.storeId)}</td>}
                 <td className="px-4 py-3">
@@ -128,8 +183,12 @@ export const UsersPage: React.FC = () => {
                     <div className="flex items-center gap-1">
                       <button onClick={() => openEdit(u)} className="p-1.5 text-indigo-600 hover:bg-white/50 rounded-lg transition"><Edit2 size={14} /></button>
                       {u.id !== currentUser?.id && (
-                        <button onClick={() => toggleUserStatus(u.id)} className={`p-1.5 rounded-lg transition ${u.status === "active" ? "text-amber-700 hover:bg-amber-500/10" : "text-emerald-700 hover:bg-emerald-500/10"}`}>
-                          {u.status === "active" ? <UserX size={14} /> : <UserCheck size={14} />}
+                        <button
+                          onClick={() => handleToggleStatus(u)}
+                          disabled={togglingId === u.id}
+                          className={`p-1.5 rounded-lg transition disabled:opacity-40 ${u.status === "active" ? "text-amber-700 hover:bg-amber-500/10" : "text-emerald-700 hover:bg-emerald-500/10"}`}
+                        >
+                          {togglingId === u.id ? <span className="text-[10px] animate-pulse">…</span> : u.status === "active" ? <UserX size={14} /> : <UserCheck size={14} />}
                         </button>
                       )}
                     </div>
@@ -141,20 +200,14 @@ export const UsersPage: React.FC = () => {
         </table>
       </div>
 
-      <Modal
-        open={showModal}
-        onClose={() => setShowModal(false)}
-        title={editUser ? "Edit User" : "Add New User"}
-        size="sm"
-        footer={<><Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button><Button onClick={handleSave}>Save User</Button></>}
+      <Modal open={showModal} onClose={() => setShowModal(false)} title={editUser ? "Edit User" : "Add New User"} size="sm"
+        footer={<><Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button><Button onClick={handleSave} disabled={saving}>{saving ? "Saving…" : "Save User"}</Button></>}
       >
         <div className="space-y-3">
+          {error && <div className="px-4 py-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl font-medium">{error}</div>}
           <Input label="Full Name *" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="John Doe" />
           <Input label="Email *" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="user@company.com" />
-          <Select
-            label="Role"
-            value={form.role}
-            onChange={e => setForm(f => ({ ...f, role: e.target.value as Role }))}
+          <Select label="Role" value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value as Role }))}
             options={[
               { value: "cashier", label: "💳 Cashier" },
               { value: "manager", label: "📊 Manager" },
@@ -163,12 +216,8 @@ export const UsersPage: React.FC = () => {
             ]}
           />
           {form.role !== "super_admin" && (
-            <Select
-              label="Assign to Store"
-              value={form.storeId}
-              onChange={e => setForm(f => ({ ...f, storeId: e.target.value }))}
-              options={stores.map(s => ({ value: s.id, label: s.name }))}
-            />
+            <Select label="Assign to Store" value={form.storeId} onChange={e => setForm(f => ({ ...f, storeId: e.target.value }))}
+              options={stores.map(s => ({ value: s.id, label: s.name }))} />
           )}
           <div className="p-3 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
             <p className="text-xs text-indigo-700"><Shield size={12} className="inline mr-1" />Default password is "password123". Users should change it upon first login.</p>

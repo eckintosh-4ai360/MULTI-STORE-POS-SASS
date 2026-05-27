@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { usePOSStore, Supplier } from "../store/posStore";
 import { Plus, Edit2, Truck, Phone, Mail, CheckCircle, X } from "lucide-react";
 import { Button } from "../components/ui/Button";
@@ -8,40 +8,125 @@ import { Modal } from "../components/ui/Modal";
 import { format } from "date-fns";
 
 export const SuppliersPage: React.FC = () => {
-  const { suppliers, addSupplier, updateSupplier, purchaseOrders, addPurchaseOrder, receivePurchaseOrder, products, currentStoreId, currentUser, stores } = usePOSStore();
+  const {
+    suppliers, addSupplier, updateSupplier,
+    purchaseOrders, addPurchaseOrder, updatePurchaseOrder,
+    products, currentStoreId, currentUser, stores,
+    adjustStock,
+  } = usePOSStore();
   const [showSupModal, setShowSupModal] = useState(false);
   const [showPOModal, setShowPOModal] = useState(false);
   const [editSup, setEditSup] = useState<Supplier | null>(null);
   const [form, setForm] = useState({ name: "", phone: "", email: "", address: "", balance: 0, storeId: "" });
   const [poForm, setPOForm] = useState({ supplierId: "", items: [{ productId: "", qty: 1, cost: 0 }] });
   const [activeTab, setActiveTab] = useState<"suppliers" | "orders">("suppliers");
+  const [supSaving, setSupSaving] = useState(false);
+  const [poSaving, setPOSaving] = useState(false);
+  const [receivingId, setReceivingId] = useState<string | null>(null);
+  const [supError, setSupError] = useState<string | null>(null);
+  const [poError, setPOError] = useState<string | null>(null);
 
   const isSuperAdmin = currentUser?.role === "super_admin";
   const storeSuppliers = isSuperAdmin ? suppliers : suppliers.filter(s => s.storeId === currentStoreId);
   const storeOrders = isSuperAdmin ? purchaseOrders : purchaseOrders.filter(o => o.storeId === currentStoreId);
   const storeProducts = products.filter(p => p.storeId === currentStoreId);
 
-  const openAdd = () => { setEditSup(null); setForm({ name: "", phone: "", email: "", address: "", balance: 0, storeId: currentStoreId ?? "" }); setShowSupModal(true); };
-  const openEdit = (s: Supplier) => { setEditSup(s); setForm({ name: s.name, phone: s.phone, email: s.email ?? "", address: s.address ?? "", balance: s.balance, storeId: s.storeId }); setShowSupModal(true); };
-
-  const handleSaveSup = () => {
-    if (!form.name || !form.phone) return;
-    if (editSup) updateSupplier(editSup.id, form);
-    else addSupplier({ ...form, storeId: form.storeId || (currentStoreId ?? "") });
-    setShowSupModal(false);
+  const openAdd = () => {
+    setEditSup(null);
+    setForm({ name: "", phone: "", email: "", address: "", balance: 0, storeId: currentStoreId ?? "" });
+    setSupError(null);
+    setShowSupModal(true);
+  };
+  const openEdit = (s: Supplier) => {
+    setEditSup(s);
+    setForm({ name: s.name, phone: s.phone, email: s.email ?? "", address: s.address ?? "", balance: s.balance, storeId: s.storeId });
+    setSupError(null);
+    setShowSupModal(true);
   };
 
-  const handleSavePO = () => {
+  const handleSaveSup = async () => {
+    if (!form.name || !form.phone) return;
+    setSupSaving(true);
+    setSupError(null);
+    try {
+      if (editSup) {
+        const res = await fetch("/api/suppliers", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editSup.id, ...form }),
+        });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Failed to update supplier");
+        const updated = await res.json();
+        updateSupplier(updated.id, updated);
+      } else {
+        const res = await fetch("/api/suppliers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...form, storeId: form.storeId || currentStoreId }),
+        });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Failed to create supplier");
+        const created = await res.json();
+        addSupplier(created);
+      }
+      setShowSupModal(false);
+    } catch (err: any) {
+      setSupError(err.message ?? "Something went wrong.");
+    } finally {
+      setSupSaving(false);
+    }
+  };
+
+  const handleSavePO = async () => {
     if (!poForm.supplierId || !poForm.items[0].productId) return;
-    const sup = suppliers.find(s => s.id === poForm.supplierId);
-    const items = poForm.items.filter(i => i.productId).map(i => {
-      const prod = products.find(p => p.id === i.productId);
-      return { productId: i.productId, productName: prod?.name ?? "", qty: i.qty, cost: i.cost || (prod?.costPrice ?? 0) };
-    });
-    const total = items.reduce((sum, i) => sum + i.qty * i.cost, 0);
-    addPurchaseOrder({ supplierId: poForm.supplierId, supplierName: sup?.name ?? "", items, total, storeId: currentStoreId ?? "", status: "pending" });
-    setShowPOModal(false);
-    setPOForm({ supplierId: "", items: [{ productId: "", qty: 1, cost: 0 }] });
+    setPOSaving(true);
+    setPOError(null);
+    try {
+      const sup = suppliers.find(s => s.id === poForm.supplierId);
+      const items = poForm.items.filter(i => i.productId).map(i => {
+        const prod = products.find(p => p.id === i.productId);
+        return { productId: i.productId, productName: prod?.name ?? "", qty: i.qty, cost: i.cost || (prod?.costPrice ?? 0) };
+      });
+      const total = items.reduce((sum, i) => sum + i.qty * i.cost, 0);
+
+      const res = await fetch("/api/purchase-orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ supplierId: poForm.supplierId, supplierName: sup?.name ?? "", items, total, storeId: currentStoreId ?? "", status: "pending" }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Failed to create purchase order");
+      const created = await res.json();
+      addPurchaseOrder(created);
+      setShowPOModal(false);
+      setPOForm({ supplierId: "", items: [{ productId: "", qty: 1, cost: 0 }] });
+    } catch (err: any) {
+      setPOError(err.message ?? "Something went wrong.");
+    } finally {
+      setPOSaving(false);
+    }
+  };
+
+  const handleReceivePO = async (orderId: string) => {
+    setReceivingId(orderId);
+    try {
+      const res = await fetch("/api/purchase-orders", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: orderId, action: "receive" }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Failed to receive order");
+      const updatedOrder = await res.json();
+      // Update the PO status in Zustand
+      updatePurchaseOrder(updatedOrder.id, updatedOrder);
+      // Sync stock for each received item
+      updatedOrder.items?.forEach((item: any) => {
+        adjustStock(item.productId, item.qty, "IN", `Received PO from ${updatedOrder.supplierName}`);
+      });
+    } catch (err: any) {
+      console.error("Receive PO error:", err);
+      alert(err.message ?? "Failed to receive purchase order.");
+    } finally {
+      setReceivingId(null);
+    }
   };
 
   return (
@@ -55,7 +140,7 @@ export const SuppliersPage: React.FC = () => {
         </div>
         <div className="flex gap-2">
           {activeTab === "suppliers" && <Button onClick={openAdd} icon={<Plus size={16} />}>Add Supplier</Button>}
-          {activeTab === "orders" && <Button onClick={() => setShowPOModal(true)} icon={<Plus size={16} />}>New Order</Button>}
+          {activeTab === "orders" && <Button onClick={() => { setPOError(null); setShowPOModal(true); }} icon={<Plus size={16} />}>New Order</Button>}
         </div>
       </div>
 
@@ -64,9 +149,7 @@ export const SuppliersPage: React.FC = () => {
           {storeSuppliers.map(sup => (
             <div key={sup.id} className="glass-card rounded-2xl border border-white/60 p-5 hover:shadow-md transition">
               <div className="flex items-start justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center text-white font-bold text-sm">
-                  {sup.name[0]}
-                </div>
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center text-white font-bold text-sm">{sup.name[0]}</div>
                 <button onClick={() => openEdit(sup)} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-white/50 rounded-lg transition"><Edit2 size={14} /></button>
               </div>
               <h3 className="font-semibold text-slate-800">{sup.name}</h3>
@@ -80,9 +163,7 @@ export const SuppliersPage: React.FC = () => {
                   <p className="text-xs text-red-600 font-medium">Outstanding: GH₵ {sup.balance.toFixed(2)}</p>
                 </div>
               )}
-              <div className="mt-3 text-xs text-gray-400">
-                {storeOrders.filter(o => o.supplierId === sup.id).length} order(s)
-              </div>
+              <div className="mt-3 text-xs text-gray-400">{storeOrders.filter(o => o.supplierId === sup.id).length} order(s)</div>
             </div>
           ))}
           {!storeSuppliers.length && <div className="col-span-3 py-16 text-center text-gray-400"><Truck size={40} className="mx-auto mb-2 opacity-40" /><p>No suppliers yet</p></div>}
@@ -114,8 +195,12 @@ export const SuppliersPage: React.FC = () => {
                   <td className="px-4 py-3"><Badge variant={order.status === "received" ? "success" : order.status === "cancelled" ? "danger" : "warning"}>{order.status}</Badge></td>
                   <td className="px-4 py-3">
                     {order.status === "pending" && (
-                      <button onClick={() => receivePurchaseOrder(order.id)} className="flex items-center gap-1 text-xs text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-1 rounded-lg transition">
-                        <CheckCircle size={12} /> Receive
+                      <button
+                        onClick={() => handleReceivePO(order.id)}
+                        disabled={receivingId === order.id}
+                        className="flex items-center gap-1 text-xs text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-1 rounded-lg transition disabled:opacity-50"
+                      >
+                        {receivingId === order.id ? <span className="animate-pulse">Receiving…</span> : <><CheckCircle size={12} /> Receive</>}
                       </button>
                     )}
                   </td>
@@ -129,8 +214,10 @@ export const SuppliersPage: React.FC = () => {
 
       {/* Supplier Modal */}
       <Modal open={showSupModal} onClose={() => setShowSupModal(false)} title={editSup ? "Edit Supplier" : "Add Supplier"} size="sm"
-        footer={<><Button variant="secondary" onClick={() => setShowSupModal(false)}>Cancel</Button><Button onClick={handleSaveSup}>Save</Button></>}>
+        footer={<><Button variant="secondary" onClick={() => setShowSupModal(false)}>Cancel</Button><Button onClick={handleSaveSup} disabled={supSaving}>{supSaving ? "Saving…" : "Save"}</Button></>}
+      >
         <div className="space-y-3">
+          {supError && <div className="px-4 py-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl font-medium">{supError}</div>}
           <Input label="Supplier Name *" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
           <Input label="Phone *" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
           <Input label="Email" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
@@ -141,14 +228,12 @@ export const SuppliersPage: React.FC = () => {
 
       {/* PO Modal */}
       <Modal open={showPOModal} onClose={() => setShowPOModal(false)} title="New Purchase Order" size="md"
-        footer={<><Button variant="secondary" onClick={() => setShowPOModal(false)}>Cancel</Button><Button onClick={handleSavePO}>Create Order</Button></>}>
+        footer={<><Button variant="secondary" onClick={() => setShowPOModal(false)}>Cancel</Button><Button onClick={handleSavePO} disabled={poSaving}>{poSaving ? "Creating…" : "Create Order"}</Button></>}
+      >
         <div className="space-y-4">
-          <Select
-            label="Supplier"
-            value={poForm.supplierId}
-            onChange={e => setPOForm(f => ({ ...f, supplierId: e.target.value }))}
-            options={[{ value: "", label: "Select Supplier" }, ...storeSuppliers.map(s => ({ value: s.id, label: s.name }))]}
-          />
+          {poError && <div className="px-4 py-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl font-medium">{poError}</div>}
+          <Select label="Supplier" value={poForm.supplierId} onChange={e => setPOForm(f => ({ ...f, supplierId: e.target.value }))}
+            options={[{ value: "", label: "Select Supplier" }, ...storeSuppliers.map(s => ({ value: s.id, label: s.name }))]} />
           <div>
             <p className="text-sm font-medium text-gray-700 mb-2">Order Items</p>
             {poForm.items.map((item, idx) => (

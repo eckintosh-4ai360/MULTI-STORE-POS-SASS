@@ -215,6 +215,7 @@ export interface POSState {
 
   // Actions — Purchase Orders
   addPurchaseOrder: (order: Omit<PurchaseOrder, "id" | "createdAt">) => void;
+  updatePurchaseOrder: (id: string, data: Partial<PurchaseOrder>) => void;
   receivePurchaseOrder: (id: string) => void;
 
   // Loading / error state
@@ -455,17 +456,17 @@ export const usePOSStore = create<POSState>()(
       setCurrentStore: (storeId) => set({ currentStoreId: storeId }),
 
       // ── Stores ──
-      addStore: (data) => set(s => ({ stores: [...s.stores, { ...data, id: generateId() }] })),
+      addStore: (data) => set(s => ({ stores: [...s.stores, { ...data, id: (data as any).id ?? generateId() }] })),
       updateStore: (id, data) => set(s => ({ stores: s.stores.map(st => st.id === id ? { ...st, ...data } : st) })),
       toggleStoreStatus: (id) => set(s => ({ stores: s.stores.map(st => st.id === id ? { ...st, status: st.status === "active" ? "inactive" : "active" } : st) })),
 
       // ── Users ──
-      addUser: (data) => set(s => ({ users: [...s.users, { ...data, id: generateId(), createdAt: new Date().toISOString() }] })),
+      addUser: (data) => set(s => ({ users: [...s.users, { ...data, id: (data as any).id ?? generateId(), createdAt: (data as any).createdAt ?? new Date().toISOString() }] })),
       updateUser: (id, data) => set(s => ({ users: s.users.map(u => u.id === id ? { ...u, ...data } : u) })),
       toggleUserStatus: (id) => set(s => ({ users: s.users.map(u => u.id === id ? { ...u, status: u.status === "active" ? "inactive" : "active" } : u) })),
 
       // ── Products ──
-      addProduct: (data) => set(s => ({ products: [...s.products, { ...data, id: generateId() }] })),
+      addProduct: (data) => set(s => ({ products: [...s.products, { ...data, id: (data as any).id ?? generateId() }] })),
       updateProduct: (id, data) => set(s => ({ products: s.products.map(p => p.id === id ? { ...p, ...data } : p) })),
       deleteProduct: (id) => set(s => ({ products: s.products.filter(p => p.id !== id) })),
       adjustStock: (productId, qty, type, note) => {
@@ -479,10 +480,10 @@ export const usePOSStore = create<POSState>()(
       },
 
       // ── Categories ──
-      addCategory: (data) => set(s => ({ categories: [...s.categories, { ...data, id: generateId() }] })),
+      addCategory: (data) => set(s => ({ categories: [...s.categories, { ...data, id: (data as any).id ?? generateId() }] })),
 
       // ── Customers ──
-      addCustomer: (data) => set(s => ({ customers: [...s.customers, { ...data, id: generateId(), createdAt: new Date().toISOString() }] })),
+      addCustomer: (data) => set(s => ({ customers: [...s.customers, { ...data, id: (data as any).id ?? generateId(), createdAt: (data as any).createdAt ?? new Date().toISOString() }] })),
       updateCustomer: (id, data) => set(s => ({ customers: s.customers.map(c => c.id === id ? { ...c, ...data } : c) })),
 
       // ── Cart ──
@@ -551,11 +552,12 @@ export const usePOSStore = create<POSState>()(
       },
 
       // ── Suppliers ──
-      addSupplier: (data) => set(s => ({ suppliers: [...s.suppliers, { ...data, id: generateId() }] })),
+      addSupplier: (data) => set(s => ({ suppliers: [...s.suppliers, { ...data, id: (data as any).id ?? generateId() }] })),
       updateSupplier: (id, data) => set(s => ({ suppliers: s.suppliers.map(sup => sup.id === id ? { ...sup, ...data } : sup) })),
 
       // ── Purchase Orders ──
-      addPurchaseOrder: (data) => set(s => ({ purchaseOrders: [...s.purchaseOrders, { ...data, id: generateId(), createdAt: new Date().toISOString() }] })),
+      addPurchaseOrder: (data) => set(s => ({ purchaseOrders: [...s.purchaseOrders, { ...data, id: (data as any).id ?? generateId(), createdAt: (data as any).createdAt ?? new Date().toISOString() }] })),
+      updatePurchaseOrder: (id, data) => set(s => ({ purchaseOrders: s.purchaseOrders.map(o => o.id === id ? { ...o, ...data } : o) })),
       receivePurchaseOrder: (id) => {
         const order = get().purchaseOrders.find(o => o.id === id);
         if (!order || order.status !== "pending") return;
