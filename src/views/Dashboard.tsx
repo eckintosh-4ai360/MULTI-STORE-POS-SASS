@@ -4,8 +4,9 @@ import { StatCard } from "../components/ui/StatCard";
 import { Card, CardHeader, CardBody } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import {
-  DollarSign, ShoppingBag, Package, AlertTriangle,
-  Users, Store, ArrowRight
+  ShoppingBag, Package, AlertTriangle,
+  Users, Store, CalendarDays, ChevronRight, CircleDollarSign,
+  Plus, Sparkles, TrendingUp
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -98,28 +99,59 @@ export const Dashboard: React.FC = () => {
   }, [sales, stores]);
 
   const recentSales = filteredSales.slice(0, 5);
+  const activeStore = stores.find(store => store.id === currentStoreId);
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-[1600px] space-y-6 pb-4">
+      <section className="relative overflow-hidden rounded-[28px] border border-white/80 bg-white/65 px-5 py-5 shadow-[0_12px_30px_rgba(73,78,163,0.07)] backdrop-blur-xl md:px-7 md:py-6">
+        <div className="absolute -right-12 -top-20 h-52 w-52 rounded-full bg-indigo-200/30 blur-2xl" />
+        <div className="absolute right-28 bottom-[-100px] h-40 w-40 rounded-full bg-cyan-200/30 blur-2xl" />
+        <div className="relative flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+          <div>
+            <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-indigo-500">
+              <Sparkles size={14} /> Business overview
+            </div>
+            <h2 className="text-2xl font-black tracking-[-0.035em] text-slate-950 md:text-3xl">
+              {greeting}, {currentUser?.name?.split(" ")[0] ?? "there"}.
+            </h2>
+            <p className="mt-1 text-sm font-medium text-slate-500">
+              {activeStore ? `${activeStore.name} is ready for business.` : "Here’s how your business is performing today."}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 rounded-2xl border border-slate-100 bg-white/80 px-3.5 py-2.5 text-xs font-semibold text-slate-500 shadow-sm">
+              <CalendarDays size={15} className="text-indigo-500" />
+              {format(new Date(), "EEEE, MMM d")}
+            </div>
+            <Button size="sm" icon={<Plus size={15} />} onClick={() => setActivePage("pos")}>New sale</Button>
+          </div>
+        </div>
+      </section>
+
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Today's Revenue" value={`GH₵ ${todayRevenue.toFixed(2)}`} icon={<DollarSign size={20} />} color="indigo" trend={revenueTrend} subtitle="vs yesterday" />
-        <StatCard title="Today's Sales" value={String(todaySales.length)} icon={<ShoppingBag size={20} />} color="emerald" trend={salesTorend} subtitle="vs yesterday" />
-        <StatCard title="Low Stock Alerts" value={String(lowStockItems.length)} icon={<AlertTriangle size={20} />} color="amber" subtitle="items need restock" />
-        <StatCard title={isSuperAdmin ? "Total Customers" : "Store Customers"} value={String(filteredCustomers.length)} icon={<Users size={20} />} color="purple" trend={5} subtitle="registered" />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard title="Today’s revenue" value={`GH₵ ${todayRevenue.toFixed(2)}`} icon={<CircleDollarSign size={21} />} color="indigo" trend={revenueTrend} subtitle="Compared with yesterday" />
+        <StatCard title="Completed sales" value={String(todaySales.length)} icon={<ShoppingBag size={21} />} color="cyan" trend={salesTorend} subtitle="Transactions recorded today" />
+        <StatCard title="Low stock items" value={String(lowStockItems.length)} icon={<AlertTriangle size={21} />} color="amber" trend={lowStockItems.length ? -Math.min(lowStockItems.length * 5, 100) : 0} subtitle={lowStockItems.length ? "Products need attention" : "Inventory looks healthy"} />
+        <StatCard title={isSuperAdmin ? "Total customers" : "Store customers"} value={String(filteredCustomers.length)} icon={<Users size={21} />} color="purple" trend={5} subtitle="Registered customers" />
       </div>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Revenue Chart */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
+        <Card className="lg:col-span-2 overflow-hidden border border-white/80 shadow-[0_12px_30px_rgba(73,78,163,0.08)]">
+          <CardHeader className="border-slate-100/80 py-5">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-800">Revenue (Last 7 Days)</h3>
-              <span className="text-sm text-gray-500">GH₵ {totalRevenue.toFixed(2)} total</span>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-indigo-500">Performance</p>
+                <h3 className="mt-1 font-bold text-slate-900">Revenue overview</h3>
+              </div>
+              <span className="rounded-xl bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-600">GH₵ {totalRevenue.toFixed(2)} total</span>
             </div>
           </CardHeader>
-          <CardBody>
+          <CardBody className="pt-5">
             <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={chartData}>
                 <defs>
@@ -139,9 +171,10 @@ export const Dashboard: React.FC = () => {
         </Card>
 
         {/* Payment Breakdown */}
-        <Card>
-          <CardHeader>
-            <h3 className="font-semibold text-gray-800">Payment Methods</h3>
+        <Card className="overflow-hidden border border-white/80 shadow-[0_12px_30px_rgba(73,78,163,0.08)]">
+          <CardHeader className="border-slate-100/80 py-5">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-500">Collections</p>
+            <h3 className="mt-1 font-bold text-slate-900">Payment methods</h3>
           </CardHeader>
           <CardBody>
             <ResponsiveContainer width="100%" height={220}>
@@ -159,10 +192,13 @@ export const Dashboard: React.FC = () => {
 
       {/* Store Comparison (Super Admin) */}
       {isSuperAdmin && (
-        <Card>
-          <CardHeader>
+        <Card className="overflow-hidden border border-white/80 shadow-[0_12px_30px_rgba(73,78,163,0.08)]">
+          <CardHeader className="border-slate-100/80 py-5">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-800">Store Revenue Comparison</h3>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-violet-500">All locations</p>
+                <h3 className="mt-1 font-bold text-slate-900">Store revenue comparison</h3>
+              </div>
               <Button variant="ghost" size="sm" icon={<Store size={14} />} onClick={() => setActivePage("stores")}>Manage Stores</Button>
             </div>
           </CardHeader>
@@ -183,20 +219,26 @@ export const Dashboard: React.FC = () => {
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Sales */}
-        <Card>
-          <CardHeader>
+        <Card className="overflow-hidden border border-white/80 shadow-[0_12px_30px_rgba(73,78,163,0.08)]">
+          <CardHeader className="border-slate-100/80 py-5">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-800">Recent Sales</h3>
-              <Button variant="ghost" size="sm" onClick={() => setActivePage("sales")}>View All <ArrowRight size={14} /></Button>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-indigo-500">Live activity</p>
+                <h3 className="mt-1 font-bold text-slate-900">Recent sales</h3>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setActivePage("sales")}>View all <ChevronRight size={15} /></Button>
             </div>
           </CardHeader>
           <CardBody className="p-0">
             <div className="divide-y divide-gray-50">
               {recentSales.map(sale => (
-                <div key={sale.id} className="px-6 py-3 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">{sale.invoiceNo}</p>
-                    <p className="text-xs text-gray-400">{format(new Date(sale.createdAt), "MMM d, h:mm a")}</p>
+                <div key={sale.id} className="flex items-center justify-between px-5 py-3.5 transition-colors hover:bg-indigo-50/40 md:px-6">
+                  <div className="flex items-center gap-3">
+                    <div className="grid h-9 w-9 place-items-center rounded-xl bg-indigo-50 text-indigo-500"><TrendingUp size={16} /></div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">{sale.invoiceNo}</p>
+                      <p className="text-xs text-gray-400">{format(new Date(sale.createdAt), "MMM d, h:mm a")}</p>
+                    </div>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-semibold text-gray-800">GH₵ {sale.total.toFixed(2)}</p>
@@ -212,17 +254,20 @@ export const Dashboard: React.FC = () => {
         </Card>
 
         {/* Low Stock Alerts */}
-        <Card>
-          <CardHeader>
+        <Card className="overflow-hidden border border-white/80 shadow-[0_12px_30px_rgba(73,78,163,0.08)]">
+          <CardHeader className="border-slate-100/80 py-5">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-800">Low Stock Alerts</h3>
-              <Button variant="ghost" size="sm" onClick={() => setActivePage("products")}>View Products <ArrowRight size={14} /></Button>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-amber-500">Inventory health</p>
+                <h3 className="mt-1 font-bold text-slate-900">Low stock alerts</h3>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setActivePage("products")}>View products <ChevronRight size={15} /></Button>
             </div>
           </CardHeader>
           <CardBody className="p-0">
             <div className="divide-y divide-gray-50">
               {lowStockItems.slice(0, 5).map(p => (
-                <div key={p.id} className="px-6 py-3 flex items-center justify-between">
+                <div key={p.id} className="flex items-center justify-between px-5 py-3.5 transition-colors hover:bg-amber-50/45 md:px-6">
                   <div>
                     <p className="text-sm font-medium text-gray-700">{p.name}</p>
                     <p className="text-xs text-gray-400">Threshold: {p.lowStockThreshold} units</p>
