@@ -82,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onMobileCl
       )}
 
       <aside className={cn(
-        "fixed left-0 top-0 h-screen glass border-r border-slate-200/50 text-slate-800 flex flex-col z-40 transition-all duration-300",
+        "fixed left-0 top-0 h-screen overflow-hidden bg-gradient-to-b from-[#1e60c7] via-[#2866c5] to-[#154ba8] text-white flex flex-col z-40 shadow-[10px_0_30px_rgba(25,73,165,0.18)] transition-all duration-300",
         // Desktop: collapsible
         "hidden md:flex",
         sidebarOpen ? "md:w-64" : "md:w-16"
@@ -105,7 +105,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onMobileCl
 
       {/* Mobile Drawer */}
       <aside className={cn(
-        "fixed left-0 top-0 h-screen glass border-r border-slate-200/50 text-slate-800 flex flex-col z-40 transition-all duration-300 w-72 md:hidden",
+        "fixed left-0 top-0 h-screen overflow-hidden bg-gradient-to-b from-[#1e60c7] via-[#2866c5] to-[#154ba8] text-white flex flex-col z-40 shadow-[10px_0_30px_rgba(25,73,165,0.25)] transition-all duration-300 w-72 md:hidden",
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <SidebarContent
@@ -151,29 +151,32 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
 }) => (
   <>
     {/* Logo */}
-    <div className="flex items-center justify-between px-4 py-4 border-b border-slate-200/50">
+    <div className={cn(
+      "relative flex items-center justify-between px-4 py-4 transition-all duration-300",
+      sidebarOpen ? "min-h-[88px] bg-white text-[#1f5fbd] rounded-br-[48px] shadow-[0_8px_18px_rgba(11,51,125,0.10)]" : "min-h-16 bg-white/10 text-white"
+    )}>
       {sidebarOpen && (
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
-            <ShoppingCart size={16} className="text-white" />
+          <div className="w-10 h-10 bg-gradient-to-br from-[#2c72d0] to-[#174ea9] rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/25">
+            <ShoppingCart size={17} className="text-white" />
           </div>
           <div>
-            <span className="font-bold text-slate-800 text-sm tracking-tight">MultiPOS</span>
-            <p className="text-[10px] text-indigo-600/80 font-medium">Retail Intelligence</p>
+            <span className="font-extrabold text-[#1d5bb8] text-base tracking-[-0.03em]">MultiPOS</span>
+            <p className="text-[10px] text-[#4f78b7] font-semibold tracking-wide">Retail Intelligence</p>
           </div>
         </div>
       )}
       {!sidebarOpen && (
-        <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto shadow-lg shadow-indigo-500/30">
+        <div className="w-9 h-9 bg-white/15 border border-white/15 rounded-xl flex items-center justify-center mx-auto">
           <ShoppingCart size={16} className="text-white" />
         </div>
       )}
       {showCloseButton ? (
-        <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition ml-auto">
+        <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-blue-50 text-[#6090cf] hover:text-[#1d5bb8] transition ml-auto">
           <X size={16} />
         </button>
       ) : (
-        <button onClick={toggleSidebar} className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition ml-auto">
+        <button onClick={toggleSidebar} className={cn("p-1.5 rounded-xl transition ml-auto", sidebarOpen ? "text-[#6090cf] hover:bg-blue-50 hover:text-[#1d5bb8]" : "text-white/65 hover:bg-white/10 hover:text-white")}>
           {sidebarOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
         </button>
       )}
@@ -181,12 +184,12 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
 
     {/* Store Switcher */}
     {sidebarOpen && currentUser?.role === "super_admin" && (
-      <div className="px-3 py-2 border-b border-slate-200/50">
-        <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-1.5 px-1 font-semibold">Active Store</p>
+      <div className="mx-3 mt-4 rounded-2xl border border-white/15 bg-white/10 p-2.5">
+        <p className="text-[10px] text-white/60 uppercase tracking-[0.14em] mb-1.5 px-1 font-bold">Active Store</p>
         <select
           value={currentStoreId ?? ""}
           onChange={e => setCurrentStore(e.target.value)}
-          className="w-full bg-white/70 text-slate-800 text-xs rounded-xl px-3 py-2 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:bg-white transition"
+          className="w-full bg-white/95 text-[#265fae] text-xs font-semibold rounded-xl px-3 py-2 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 transition"
         >
           {stores.map(s => <option key={s.id} value={s.id} className="bg-white text-slate-800">{s.name}</option>)}
         </select>
@@ -194,21 +197,21 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
     )}
 
     {sidebarOpen && currentStore && currentUser?.role !== "super_admin" && (
-      <div className="px-4 py-2.5 border-b border-slate-200/50">
-        <p className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Current Store</p>
-        <p className="text-xs font-bold text-indigo-600 truncate mt-0.5">{currentStore.name}</p>
+      <div className="mx-3 mt-4 rounded-2xl border border-white/15 bg-white/10 px-3 py-2.5">
+        <p className="text-[10px] text-white/60 uppercase tracking-[0.14em] font-bold">Current Store</p>
+        <p className="text-xs font-bold text-white truncate mt-0.5">{currentStore.name}</p>
       </div>
     )}
 
     {/* Nav */}
-    <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4 scrollbar-hide">
+    <nav className="flex-1 overflow-y-auto px-3 py-5 space-y-5 scrollbar-hide">
       {navGroups.map(group => {
         const visibleItems = group.items.filter(item => allowed.includes(item.id));
         if (!visibleItems.length) return null;
         return (
           <div key={group.label}>
             {sidebarOpen && (
-              <p className="text-[10px] uppercase tracking-widest text-slate-400 px-2 mb-1.5 font-bold">{group.label}</p>
+              <p className="text-[10px] uppercase tracking-[0.16em] text-white/55 px-3 mb-2 font-extrabold">{group.label}</p>
             )}
             <div className="space-y-0.5">
               {visibleItems.map(({ id, label, icon: Icon }) => (
@@ -216,18 +219,18 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                   key={id}
                   onClick={() => handleNavClick(id)}
                   className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 group",
+                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm transition-all duration-200 group",
                     activePage === id
-                      ? "bg-indigo-50/80 text-indigo-700 font-semibold border border-indigo-100 shadow-sm shadow-indigo-500/5"
-                      : "text-slate-500 hover:bg-slate-100 hover:text-slate-800",
+                      ? "bg-white text-[#235eb8] font-bold shadow-[0_8px_18px_rgba(10,48,123,0.16)]"
+                      : "text-white/75 hover:bg-white/10 hover:text-white",
                     !sidebarOpen && "justify-center"
                   )}
                   title={!sidebarOpen ? label : undefined}
                 >
-                  <Icon size={17} className={cn("flex-shrink-0 transition-colors", activePage === id ? "text-indigo-600" : "text-slate-400 group-hover:text-slate-600")} />
+                  <Icon size={17} className={cn("flex-shrink-0 transition-colors", activePage === id ? "text-[#2364c5]" : "text-white/65 group-hover:text-white")} />
                   {sidebarOpen && <span className="truncate font-semibold">{label}</span>}
                   {sidebarOpen && activePage === id && (
-                    <span className="ml-auto w-1.5 h-1.5 bg-indigo-600 rounded-full" />
+                    <span className="ml-auto w-1.5 h-1.5 bg-[#2364c5] rounded-full" />
                   )}
                 </button>
               ))}
@@ -238,27 +241,26 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
     </nav>
 
     {/* User */}
-    <div className="border-t border-slate-200/50 p-3">
+    <div className="border-t border-white/15 p-3">
       {sidebarOpen ? (
-        <div className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-100/50 transition">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0 shadow-md">
+        <div className="flex items-center gap-2.5 p-2 rounded-2xl hover:bg-white/10 transition">
+          <div className="w-8 h-8 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center text-xs font-bold text-white flex-shrink-0 shadow-md">
             {currentUser?.name?.[0] ?? "U"}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-slate-800 truncate">{currentUser?.name}</p>
-            <p className="text-[10px] text-slate-400 capitalize font-medium">{currentUser?.role?.replace("_", " ")}</p>
+            <p className="text-xs font-bold text-white truncate">{currentUser?.name}</p>
+            <p className="text-[10px] text-white/55 capitalize font-medium">{currentUser?.role?.replace("_", " ")}</p>
           </div>
-          <button onClick={logout} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition" title="Logout">
+          <button onClick={logout} className="p-1.5 rounded-lg hover:bg-white/15 text-white/55 hover:text-white transition" title="Logout">
             <LogOut size={14} />
           </button>
         </div>
       ) : (
-        <button onClick={logout} className="w-full flex justify-center p-2 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-500 transition" title="Logout">
+        <button onClick={logout} className="w-full flex justify-center p-2 rounded-xl hover:bg-white/10 text-white/60 hover:text-white transition" title="Logout">
           <LogOut size={18} />
         </button>
       )}
     </div>
   </>
 );
-
 
