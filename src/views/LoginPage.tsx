@@ -295,6 +295,9 @@ export const LoginPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPass(v => !v)}
+                    aria-label={showPass ? "Hide password" : "Show password"}
+                    aria-pressed={showPass}
+                    title={showPass ? "Hide password" : "Show password"}
                     style={{
                       position: "absolute", right: "14px", top: "50%",
                       transform: "translateY(-50%)",
