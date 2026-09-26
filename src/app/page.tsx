@@ -128,8 +128,6 @@ export default function LandingPage() {
           <div className="absolute bottom-[-15%] right-[-10%] w-[55%] h-[55%] bg-purple-600/20 rounded-full filter blur-[120px] animate-pulse" style={{ animationDelay: "2s" }} />
           <div className="absolute top-[40%] left-[50%] w-[30%] h-[30%] bg-cyan-600/10 rounded-full filter blur-[80px]" />
         </div>
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
-
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
           <div className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-4 py-1.5 mb-8">
             <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
