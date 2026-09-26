@@ -7,6 +7,7 @@ import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
 import { Input, Select } from "../components/ui/Input";
 import { Modal } from "../components/ui/Modal";
+import { StatCard } from "../components/ui/StatCard";
 import { cn } from "../utils/cn";
 
 const emptyProduct = { name: "", barcode: "", price: 0, costPrice: 0, stock: 0, categoryId: "", storeId: "", lowStockThreshold: 10, expiryDate: "", image: "" };
@@ -190,17 +191,14 @@ export const ProductsPage: React.FC = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: "Total Products", value: storeProducts.length, color: "text-indigo-600" },
-          { label: "In Stock", value: storeProducts.filter(p => p.stock > 0).length, color: "text-emerald-600" },
-          { label: "Low Stock", value: storeProducts.filter(p => p.stock > 0 && p.stock <= p.lowStockThreshold).length, color: "text-amber-600" },
-          { label: "Out of Stock", value: storeProducts.filter(p => p.stock === 0).length, color: "text-red-600" },
+          { label: "Total products", value: String(storeProducts.length), subtitle: "Products in this view", icon: <Package size={21} />, color: "indigo" as const },
+          { label: "In stock", value: String(storeProducts.filter(p => p.stock > 0).length), subtitle: "Products available to sell", icon: <Package size={21} />, color: "emerald" as const },
+          { label: "Low stock", value: String(storeProducts.filter(p => p.stock > 0 && p.stock <= p.lowStockThreshold).length), subtitle: "Products needing attention", icon: <AlertTriangle size={21} />, color: "amber" as const },
+          { label: "Out of stock", value: String(storeProducts.filter(p => p.stock === 0).length), subtitle: "Products unavailable to sell", icon: <XCircle size={21} />, color: "rose" as const },
         ].map(stat => (
-          <div key={stat.label} className="glass-card rounded-2xl border border-white/60 p-4 shadow-sm">
-            <p className="text-xs font-semibold text-slate-500/80 uppercase tracking-widest">{stat.label}</p>
-            <p className={cn("text-2xl font-extrabold mt-0.5", stat.color)}>{stat.value}</p>
-          </div>
+          <StatCard key={stat.label} title={stat.label} value={stat.value} subtitle={stat.subtitle} icon={stat.icon} color={stat.color} />
         ))}
       </div>
 

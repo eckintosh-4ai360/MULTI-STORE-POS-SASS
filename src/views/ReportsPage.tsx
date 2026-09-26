@@ -1,6 +1,7 @@
 ﻿import React, { useMemo, useState } from "react";
 import { usePOSStore } from "../store/posStore";
 import { Card, CardHeader, CardBody } from "../components/ui/Card";
+import { StatCard } from "../components/ui/StatCard";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, Legend
@@ -109,22 +110,14 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: "Total Revenue", value: `GH₵ ${totalRevenue.toFixed(2)}`, icon: <DollarSign size={18} />, color: "text-indigo-600 bg-indigo-500/10" },
-          { label: "Gross Profit", value: `GH₵ ${totalProfit.toFixed(2)}`, icon: <TrendingUp size={18} />, color: "text-emerald-600 bg-emerald-500/10" },
-          { label: "Transactions", value: String(periodSales.length), icon: <ShoppingBag size={18} />, color: "text-amber-600 bg-amber-500/10" },
-          { label: "Avg. Sale Value", value: `GH₵ ${avgSale.toFixed(2)}`, icon: <Package size={18} />, color: "text-purple-600 bg-purple-500/10" },
+          { label: "Total revenue", value: `GH₵ ${totalRevenue.toFixed(2)}`, subtitle: "Revenue in the selected period", icon: <DollarSign size={21} />, color: "indigo" as const },
+          { label: "Gross profit", value: `GH₵ ${totalProfit.toFixed(2)}`, subtitle: "Estimated profit in this period", icon: <TrendingUp size={21} />, color: "emerald" as const },
+          { label: "Transactions", value: String(periodSales.length), subtitle: "Completed sales in this period", icon: <ShoppingBag size={21} />, color: "amber" as const },
+          { label: "Average sale value", value: `GH₵ ${avgSale.toFixed(2)}`, subtitle: "Average value per transaction", icon: <Package size={21} />, color: "purple" as const },
         ].map(s => (
-          <div key={s.label} className="glass-card rounded-2xl border border-white/60 p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition">
-            <div className={`p-2.5 rounded-xl ${s.color.split(" ")[1]}`}>
-              <span className={s.color.split(" ")[0]}>{s.icon}</span>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-slate-500/80 uppercase tracking-widest">{s.label}</p>
-              <p className="text-lg font-bold text-slate-800">{s.value}</p>
-            </div>
-          </div>
+          <StatCard key={s.label} title={s.label} value={s.value} subtitle={s.subtitle} icon={s.icon} color={s.color} />
         ))}
       </div>
 

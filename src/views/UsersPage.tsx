@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { usePOSStore, User, Role } from "../store/posStore";
-import { Plus, Edit2, UserCheck, UserX, Shield } from "lucide-react";
+import { Plus, Edit2, UserCheck, UserX, Shield, Store, BarChart3, ShoppingBag } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
 import { Input, Select } from "../components/ui/Input";
 import { Modal } from "../components/ui/Modal";
+import { StatCard } from "../components/ui/StatCard";
 import { format } from "date-fns";
 
 const roleColors: Record<Role, "purple" | "info" | "warning" | "success"> = {
@@ -19,6 +20,20 @@ const roleIcons: Record<Role, string> = {
   store_admin: "🏪",
   manager: "📊",
   cashier: "💳",
+};
+
+const roleStatIcons: Record<Role, React.ReactNode> = {
+  super_admin: <Shield size={21} />,
+  store_admin: <Store size={21} />,
+  manager: <BarChart3 size={21} />,
+  cashier: <ShoppingBag size={21} />,
+};
+
+const roleStatColors: Record<Role, "purple" | "cyan" | "amber" | "emerald"> = {
+  super_admin: "purple",
+  store_admin: "cyan",
+  manager: "amber",
+  cashier: "emerald",
 };
 
 export const UsersPage: React.FC = () => {
@@ -133,13 +148,16 @@ export const UsersPage: React.FC = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {(["super_admin", "store_admin", "manager", "cashier"] as Role[]).map(r => (
-          <div key={r} className="glass-stat-card rounded-2xl p-4">
-            <p className="text-xs text-slate-500 capitalize">{r.replace("_", " ")}</p>
-            <p className="text-2xl font-bold text-slate-800 mt-0.5">{byRole(r).length}</p>
-            <p className="text-xs text-slate-400">{byRole(r).filter(u => u.status === "active").length} active</p>
-          </div>
+          <StatCard
+            key={r}
+            title={r.replace("_", " ")}
+            value={String(byRole(r).length)}
+            subtitle={`${byRole(r).filter(u => u.status === "active").length} active account${byRole(r).filter(u => u.status === "active").length === 1 ? "" : "s"}`}
+            icon={roleStatIcons[r]}
+            color={roleStatColors[r]}
+          />
         ))}
       </div>
 

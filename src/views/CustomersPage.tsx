@@ -4,6 +4,7 @@ import { Plus, Search, Edit2, Users, Phone, Mail, AlertCircle } from "lucide-rea
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Modal } from "../components/ui/Modal";
+import { StatCard } from "../components/ui/StatCard";
 import { format } from "date-fns";
 
 export const CustomersPage: React.FC = () => {
@@ -88,16 +89,13 @@ export const CustomersPage: React.FC = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {[
-          { label: "Total Customers", value: storeCustomers.length, color: "text-indigo-600" },
-          { label: "With Credit", value: storeCustomers.filter(c => c.creditBalance > 0).length, color: "text-amber-600" },
-          { label: "Total Credit Owed", value: `GH₵ ${storeCustomers.reduce((s, c) => s + c.creditBalance, 0).toFixed(2)}`, color: "text-red-600" },
+          { label: "Total customers", value: String(storeCustomers.length), subtitle: "Registered customer profiles", icon: <Users size={21} />, color: "indigo" as const },
+          { label: "With credit", value: String(storeCustomers.filter(c => c.creditBalance > 0).length), subtitle: "Customers with a balance", icon: <AlertCircle size={21} />, color: "amber" as const },
+          { label: "Total credit owed", value: `GH₵ ${storeCustomers.reduce((s, c) => s + c.creditBalance, 0).toFixed(2)}`, subtitle: "Outstanding customer balance", icon: <Users size={21} />, color: "rose" as const },
         ].map(stat => (
-          <div key={stat.label} className="glass-card rounded-2xl border border-white/60 p-4">
-            <p className="text-xs font-semibold text-slate-500/80 uppercase tracking-widest">{stat.label}</p>
-            <p className={`text-xl font-bold mt-0.5 ${stat.color}`}>{stat.value}</p>
-          </div>
+          <StatCard key={stat.label} title={stat.label} value={stat.value} subtitle={stat.subtitle} icon={stat.icon} color={stat.color} />
         ))}
       </div>
 

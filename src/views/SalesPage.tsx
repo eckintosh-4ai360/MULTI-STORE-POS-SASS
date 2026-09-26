@@ -1,10 +1,11 @@
 ﻿import React, { useState, useMemo } from "react";
 import { usePagination } from "../utils/usePagination";
 import { usePOSStore, Sale } from "../store/posStore";
-import { Search, Receipt, Eye } from "lucide-react";
+import { Search, Receipt, Eye, CircleDollarSign, TrendingUp } from "lucide-react";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Modal } from "../components/ui/Modal";
+import { StatCard } from "../components/ui/StatCard";
 import { format } from "date-fns";
 import { cn } from "../utils/cn";
 
@@ -87,19 +88,10 @@ export const SalesPage: React.FC = () => {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="glass-card rounded-2xl border border-white/60 p-4 shadow-sm">
-          <p className="text-xs font-semibold text-slate-500/80 uppercase tracking-widest">Transactions</p>
-          <p className="text-2xl font-extrabold text-indigo-600 mt-0.5">{filtered.length}</p>
-        </div>
-        <div className="glass-card rounded-2xl border border-white/60 p-4 shadow-sm">
-          <p className="text-xs font-semibold text-slate-500/80 uppercase tracking-widest">Total Revenue</p>
-          <p className="text-2xl font-extrabold text-emerald-600 mt-0.5">GH₵ {totalRevenue.toFixed(2)}</p>
-        </div>
-        <div className="glass-card rounded-2xl border border-white/60 p-4 shadow-sm">
-          <p className="text-xs font-semibold text-slate-500/80 uppercase tracking-widest">Avg. Sale</p>
-          <p className="text-2xl font-extrabold text-slate-700 mt-0.5">GH₵ {filtered.length ? (totalRevenue / filtered.length).toFixed(2) : "0.00"}</p>
-        </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <StatCard title="Transactions" value={String(filtered.length)} subtitle="Sales matching active filters" icon={<Receipt size={21} />} color="indigo" />
+        <StatCard title="Total revenue" value={`GH₵ ${totalRevenue.toFixed(2)}`} subtitle="Revenue from selected sales" icon={<CircleDollarSign size={21} />} color="emerald" />
+        <StatCard title="Average sale" value={`GH₵ ${filtered.length ? (totalRevenue / filtered.length).toFixed(2) : "0.00"}`} subtitle="Average value per transaction" icon={<TrendingUp size={21} />} color="purple" />
       </div>
 
       {/* Table */}

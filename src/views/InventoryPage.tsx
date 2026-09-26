@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { usePOSStore } from "../store/posStore";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
+import { StatCard } from "../components/ui/StatCard";
 import { Search, ArrowDownCircle, ArrowUpCircle, ArrowLeftRight, ShoppingCart } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "../utils/cn";
@@ -49,22 +50,14 @@ export const InventoryPage: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: "Stock Received", value: summary.in, icon: <ArrowDownCircle size={18} />, color: "text-emerald-600 bg-emerald-500/10" },
-          { label: "Stock Removed", value: summary.out, icon: <ArrowUpCircle size={18} />, color: "text-red-600 bg-red-500/10" },
-          { label: "Transferred", value: summary.transfers, icon: <ArrowLeftRight size={18} />, color: "text-blue-600 bg-blue-500/10" },
-          { label: "Units Sold", value: summary.sales, icon: <ShoppingCart size={18} />, color: "text-indigo-600 bg-indigo-500/10" },
+          { label: "Stock received", value: String(summary.in), subtitle: "Units added to inventory", icon: <ArrowDownCircle size={21} />, color: "emerald" as const },
+          { label: "Stock removed", value: String(summary.out), subtitle: "Units removed manually", icon: <ArrowUpCircle size={21} />, color: "rose" as const },
+          { label: "Transferred", value: String(summary.transfers), subtitle: "Units moved between stores", icon: <ArrowLeftRight size={21} />, color: "cyan" as const },
+          { label: "Units sold", value: String(summary.sales), subtitle: "Units deducted through sales", icon: <ShoppingCart size={21} />, color: "indigo" as const },
         ].map(s => (
-          <div key={s.label} className="glass-card rounded-2xl border border-white/60 p-4 flex items-center gap-3 shadow-sm hover:shadow-md transition">
-            <div className={`p-2.5 rounded-xl ${s.color.split(" ")[1]}`}>
-              <span className={s.color.split(" ")[0]}>{s.icon}</span>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-slate-500/80 uppercase tracking-widest">{s.label}</p>
-              <p className="text-xl font-bold text-slate-800">{s.value} units</p>
-            </div>
-          </div>
+          <StatCard key={s.label} title={s.label} value={s.value} subtitle={s.subtitle} icon={s.icon} color={s.color} />
         ))}
       </div>
 
